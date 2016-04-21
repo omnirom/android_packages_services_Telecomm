@@ -36,6 +36,7 @@ import android.telecom.PhoneAccountHandle;
 import android.telecom.StatusHints;
 import android.telecom.TelecomManager;
 import android.telecom.VideoProfile;
+import android.telephony.TelephonyManager;
 
 import com.android.internal.telecom.IConnectionService;
 import com.android.internal.telecom.IConnectionServiceAdapter;
@@ -282,6 +283,10 @@ final class ConnectionServiceWrapper extends ServiceBinder {
                             childCall.setParentCall(null);
                         } else {
                             Call conferenceCall = mCallIdMapper.getCall(conferenceCallId);
+                            if (conferenceCall.getTargetPhoneAccount() == null) {
+                                PhoneAccountHandle ph = childCall.getTargetPhoneAccount();
+                                conferenceCall.setTargetPhoneAccount(ph);
+                            }
                             childCall.setParentCall(conferenceCall);
                         }
                     } else {
@@ -496,7 +501,14 @@ final class ConnectionServiceWrapper extends ServiceBinder {
                     if (mCallIdMapper.isValidCallId(callId)
                             || mCallIdMapper.isValidConferenceId(callId)) {
                         Call call = mCallIdMapper.getCall(callId);
-                        if (call != null) {
+                        if (call != null && extras != null) {
+                            if (extras.getParcelable(TelephonyManager.EMR_DIAL_ACCOUNT) instanceof
+                                    PhoneAccountHandle) {
+                                PhoneAccountHandle account = extras.
+                                        getParcelable(TelephonyManager.EMR_DIAL_ACCOUNT);
+                                Log.d(this, "setTargetPhoneAccount, account = " + account);
+                                call.setTargetPhoneAccount(account);
+                            }
                             call.setExtras(extras);
                         }
                     }
@@ -810,6 +822,18 @@ final class ConnectionServiceWrapper extends ServiceBinder {
             try {
                 logOutgoing("playDtmfTone %s %c", callId, digit);
                 mServiceInterface.playDtmfTone(callId, digit);
+            } catch (RemoteException e) {
+            }
+        }
+    }
+
+    /** @see ConnectionService#setLocalCallHold(String,int) */
+    void setLocalCallHold(Call call, boolean lchStatus) {
+        final String callId = mCallIdMapper.getCallId(call);
+        if (callId != null && isServiceValid("SetLocalCallHold")) {
+            try {
+                logOutgoing("SetLocalCallHold %s %b", mCallIdMapper.getCallId(call), lchStatus);
+                mServiceInterface.setLocalCallHold(mCallIdMapper.getCallId(call), lchStatus);
             } catch (RemoteException e) {
             }
         }
