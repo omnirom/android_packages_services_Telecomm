@@ -22,6 +22,29 @@
       "revId": "bc0ce1f60eeac29e4a9b6713b660a31e15660406",
       "serverId": "56841c99-7c94-43d4-bf0b-cb4707e66d55",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "18107d3d_832ae42b",
+        "filename": "src/com/android/server/telecom/ui/MissedCallNotifierImpl.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 311,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2016-09-27T12:47:43Z",
+      "side": 1,
+      "message": "Ok, found the trick: we can put the custom notification code here too:\nhttps://github.com/ezio84/pnmod-n_packages_apps_Dialer/blob/n/src/com/android/dialer/calllog/MissedCallNotifier.java#L275",
+      "range": {
+        "startLine": 311,
+        "startChar": 12,
+        "endLine": 311,
+        "endChar": 48
+      },
+      "revId": "bc0ce1f60eeac29e4a9b6713b660a31e15660406",
+      "serverId": "56841c99-7c94-43d4-bf0b-cb4707e66d55",
+      "unresolved": false
     }
   ]
 }
