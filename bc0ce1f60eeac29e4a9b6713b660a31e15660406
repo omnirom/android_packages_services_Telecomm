@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "18107d3d_c300dcb3",
+        "filename": "src/com/android/server/telecom/ui/MissedCallNotifierImpl.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 310,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2016-09-27T11:50:21Z",
+      "side": 1,
+      "message": "Maybe the issue is here: it let the Dialer handle the notification, so we need to add Dialer as custom app to show a different led color",
+      "range": {
+        "startLine": 310,
+        "startChar": 12,
+        "endLine": 310,
+        "endChar": 56
+      },
+      "revId": "bc0ce1f60eeac29e4a9b6713b660a31e15660406",
+      "serverId": "56841c99-7c94-43d4-bf0b-cb4707e66d55",
+      "unresolved": false
+    }
+  ]
+}
