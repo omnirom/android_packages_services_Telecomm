@@ -1326,6 +1326,8 @@ public class CallAudioRouteStateMachine extends StateMachine {
             mAudioManager.setSpeakerphoneOn(on);
             mStatusBarNotifier.notifySpeakerphone(on);
         }
+        // StatusBarNotifier has check for previous state before notifying again
+        mStatusBarNotifier.notifySpeakerphone(on);
     }
 
     private void setBluetoothOn(boolean on) {

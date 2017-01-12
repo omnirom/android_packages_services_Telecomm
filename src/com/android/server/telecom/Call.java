@@ -209,7 +209,7 @@ public class Call implements CreateConnectionResponse {
     /**
      * The post-dial digits that were dialed after the network portion of the number
      */
-    private final String mPostDialDigits;
+    private String mPostDialDigits;
 
     /**
      * The secondary line number that an incoming call has been received on if the SIM subscription
@@ -272,6 +272,8 @@ public class Call implements CreateConnectionResponse {
     private boolean mIsEmergencyCall;
 
     private boolean mSpeakerphoneOn;
+
+    private boolean mIsChildCall = false;
 
     /**
      * Tracks the video states which were applicable over the duration of a call.
@@ -746,6 +748,10 @@ public class Call implements CreateConnectionResponse {
         return mHandle;
     }
 
+    public void setPostDialDigits(String postDialDigits) {
+        mPostDialDigits = postDialDigits;
+    }
+
     public String getPostDialDigits() {
         return mPostDialDigits;
     }
@@ -789,9 +795,8 @@ public class Call implements CreateConnectionResponse {
             // Let's not allow resetting of the emergency flag. Once a call becomes an emergency
             // call, it will remain so for the rest of it's lifetime.
             if (!mIsEmergencyCall) {
-                mIsEmergencyCall = mHandle != null &&
-                        mPhoneNumberUtilsAdapter.isLocalEmergencyNumber(mContext,
-                                mHandle.getSchemeSpecificPart());
+                mIsEmergencyCall = mHandle != null && TelephonyUtil.isLocalEmergencyNumber(
+                        mHandle.getSchemeSpecificPart());
             }
             startCallerInfoLookup();
             for (Listener l : mListeners) {
@@ -997,6 +1002,10 @@ public class Call implements CreateConnectionResponse {
         mCreationTimeMillis = time;
     }
 
+    public void setConnectTimeMillis(long connectTimeMillis) {
+        mConnectTimeMillis = connectTimeMillis;
+    }
+
     long getConnectTimeMillis() {
         return mConnectTimeMillis;
     }
@@ -1088,6 +1097,19 @@ public class Call implements CreateConnectionResponse {
     @VisibleForTesting
     public boolean wasConferencePreviouslyMerged() {
         return mWasConferencePreviouslyMerged;
+    }
+
+    public boolean isChildCall() {
+        return mIsChildCall;
+    }
+
+    /**
+     * Sets whether this call is a child call.
+     */
+    private void maybeSetCallAsChild() {
+        if (mParentCall != null) {
+            mIsChildCall = true;
+        }
     }
 
     @VisibleForTesting
@@ -1312,6 +1334,7 @@ public class Call implements CreateConnectionResponse {
 
         // Track that the call is now locally disconnecting.
         setLocallyDisconnecting(true);
+        maybeSetCallAsChild();
 
         if (mState == CallState.NEW || mState == CallState.SELECT_PHONE_ACCOUNT ||
                 mState == CallState.CONNECTING) {
@@ -1603,6 +1626,14 @@ public class Call implements CreateConnectionResponse {
         }
     }
 
+    void addParticipantWithConference(String recipients) {
+        if (mConnectionService == null) {
+            Log.w(this, "conference requested on a call without a connection service.");
+        } else {
+            mConnectionService.addParticipantWithConference(this, recipients);
+        }
+    }
+
     @VisibleForTesting
     public void mergeConference() {
         if (mConnectionService == null) {
@@ -1876,7 +1907,7 @@ public class Call implements CreateConnectionResponse {
             return;
         }
 
-        if (!handle.equals(mHandle)) {
+        if ((handle != null) && !handle.equals(mHandle)) {
             Log.i(this, "setCallerInfo received stale caller info for an old handle. Ignoring.");
             return;
         }
@@ -1884,8 +1915,8 @@ public class Call implements CreateConnectionResponse {
         mCallerInfo = callerInfo;
         Log.i(this, "CallerInfo received for %s: %s", Log.piiHandle(mHandle), callerInfo);
 
-        if (mCallerInfo.contactDisplayPhotoUri == null ||
-                mCallerInfo.cachedPhotoIcon != null || mCallerInfo.cachedPhoto != null) {
+        if ((mCallerInfo != null) && (mCallerInfo.contactDisplayPhotoUri == null ||
+                mCallerInfo.cachedPhotoIcon != null || mCallerInfo.cachedPhoto != null)) {
             for (Listener l : mListeners) {
                 l.onCallerInfoChanged(this);
             }
@@ -2046,7 +2077,8 @@ public class Call implements CreateConnectionResponse {
     }
 
     public boolean getIsVoipAudioMode() {
-        return mIsVoipAudioMode;
+            return mIsVoipAudioMode ||((mHandle != null) ?
+                    (mHandle.getScheme() == PhoneAccount.SCHEME_SIP): false);
     }
 
     public void setIsVoipAudioMode(boolean audioModeIsVoip) {
