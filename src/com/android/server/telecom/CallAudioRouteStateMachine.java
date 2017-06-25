@@ -31,6 +31,7 @@ import android.os.Message;
 import android.os.RemoteException;
 import android.os.SystemProperties;
 import android.os.UserHandle;
+import android.provider.Settings;
 import android.telecom.CallAudioState;
 import android.util.SparseArray;
 
@@ -1330,7 +1331,10 @@ public class CallAudioRouteStateMachine extends StateMachine {
         Log.i(this, "setNotificationsSuppressed: on=%s; suppressed=%s", (on ? "yes" : "no"),
                 (mAreNotificationSuppressed ? "yes" : "no"));
         if (on) {
-            if (!mAreNotificationSuppressed) {
+            boolean dndModeEnabled = Settings.System.getInt(mContext.getContentResolver(),
+                    Settings.System.CALL_DND_ENABLED, 1) == 1;
+
+            if (dndModeEnabled && !mAreNotificationSuppressed) {
                 // Enabling suppression of notifications.
                 int interruptionFilter = mInterruptionFilterProxy.getCurrentInterruptionFilter();
                 if (interruptionFilter == NotificationManager.INTERRUPTION_FILTER_ALL) {
