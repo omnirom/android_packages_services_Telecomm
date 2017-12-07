@@ -1093,9 +1093,9 @@ public class PhoneAccountRegistrar {
     private void sortPhoneAccounts() {
         if (mState.accounts.size() > 1) {
             // Sort the phone accounts using sort order:
-            // 1) SIM accounts first, followed by non-sim accounts.
+            // 1) SIM accounts first, followed by non-sim accounts
             // 2) Sort order, with those specifying no sort order last.
-            // 3) Label.
+            // 3) Label
 
             // Comparator to sort SIM subscriptions before non-sim subscriptions.
             Comparator<PhoneAccount> bySimCapability = (p1, p2) -> {
@@ -1918,4 +1918,8 @@ public class PhoneAccountRegistrar {
             return null;
         }
     };
+
+    private String nullToEmpty(String str) {
+        return str == null ? "" : str;
+    }
 }
