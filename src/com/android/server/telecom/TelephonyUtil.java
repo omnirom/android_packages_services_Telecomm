@@ -91,12 +91,12 @@ public final class TelephonyUtil {
     public static boolean isLocalEmergencyNumber(String address) {
         IExtTelephony mIExtTelephony = getIExtTelephony();
         boolean result = false;
-        try {
-            result = mIExtTelephony.isLocalEmergencyNumber(address);
-        }catch (RemoteException ex) {
-            Log.e(LOG_TAG, ex, "RemoteException");
-        } catch (NullPointerException ex) {
-            Log.e(LOG_TAG, ex, "NullPointerException");
+        if (address != null) {
+            try {
+                result = mIExtTelephony.isLocalEmergencyNumber(address);
+            }catch (RemoteException ex) {
+                Log.e(LOG_TAG, ex, "RemoteException");
+            }
         }
         return result;
     }
@@ -104,12 +104,12 @@ public final class TelephonyUtil {
     public static boolean isPotentialLocalEmergencyNumber(String address) {
         IExtTelephony mIExtTelephony = getIExtTelephony();
         boolean result = false;
-        try {
-            result = mIExtTelephony.isPotentialLocalEmergencyNumber(address);
-        }catch (RemoteException ex) {
-            Log.e(LOG_TAG, ex, "RemoteException");
-        } catch (NullPointerException ex) {
-            Log.e(LOG_TAG, ex, "NullPointerException");
+        if (address != null) {
+            try {
+                result = mIExtTelephony.isPotentialLocalEmergencyNumber(address);
+            }catch (RemoteException ex) {
+                Log.e(LOG_TAG, ex, "RemoteException");
+            }
         }
         return result;
     }
