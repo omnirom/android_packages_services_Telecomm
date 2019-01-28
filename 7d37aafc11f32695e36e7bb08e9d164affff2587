@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7a9d7a64_29f7ba3b",
+        "filename": "src/com/android/server/telecom/Ringer.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 340,
+      "author": {
+        "id": 1000026
+      },
+      "writtenOn": "2019-01-28T11:07:53Z",
+      "side": 1,
+      "message": "effect pattern should be a resource like all others - makes it easy then to overwrite in overlay\ncheck e.g. config_defaultNotificationVibePattern in fwb",
+      "revId": "7d37aafc11f32695e36e7bb08e9d164affff2587",
+      "serverId": "56841c99-7c94-43d4-bf0b-cb4707e66d55",
+      "unresolved": true
+    }
+  ]
+}
