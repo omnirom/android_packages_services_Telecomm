@@ -31,6 +31,7 @@ import android.content.res.Resources;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.Ringtone;
+import android.media.RingtoneManager;
 import android.media.Utils;
 import android.media.VolumeShaper;
 import android.media.audio.Flags;
@@ -307,6 +308,8 @@ public class Ringer {
                 return false;
             }
 
+            mAttributesLatch = new CountDownLatch(1);
+
             // Use completable future to establish a timeout, not intent to make these work outside
             // the main thread asynchronously
             // TODO: moving these RingerAttributes calculation out of Telecom lock to avoid blocking
@@ -316,7 +319,6 @@ public class Ringer {
 
             RingerAttributes attributes = null;
             try {
-                mAttributesLatch = new CountDownLatch(1);
                 attributes = ringerAttributesFuture.get(
                         RINGER_ATTRIBUTES_TIMEOUT, TimeUnit.MILLISECONDS);
             } catch (ExecutionException | InterruptedException | TimeoutException e) {
@@ -434,6 +436,11 @@ public class Ringer {
                     && isVibratorEnabled) {
                 Log.i(this, "Muted haptic channels since audio coupled ramping ringer is disabled");
                 hapticChannelsMuted = true;
+                if (useCustomVibration(foregroundCall)) {
+                    Log.i(this,
+                            "Not muted haptic channel for customization when apply ramping ringer");
+                    hapticChannelsMuted = false;
+                }
             } else if (hapticChannelsMuted) {
                 Log.i(this,
                         "Muted haptic channels isVibratorEnabled=%s, hapticPlaybackSupported=%s",
@@ -445,7 +452,7 @@ public class Ringer {
             if (!isHapticOnly) {
                 ringtoneInfoSupplier = () -> mRingtoneFactory.getRingtone(
                         foregroundCall, mVolumeShaperConfig, finalHapticChannelsMuted);
-            } else if (Flags.enableRingtoneHapticsCustomization() && mRingtoneVibrationSupported) {
+            } else if (useCustomVibration(foregroundCall)) {
                 ringtoneInfoSupplier = () -> mRingtoneFactory.getRingtone(
                         foregroundCall, null, false);
             }
@@ -522,6 +529,21 @@ public class Ringer {
                 mBlockOnRingingFuture.complete(null);
             }
         }
+    }
+
+    private boolean useCustomVibration(@NonNull Call foregroundCall) {
+        return Flags.enableRingtoneHapticsCustomization() && mRingtoneVibrationSupported
+                && hasExplicitVibration(foregroundCall);
+    }
+
+    private boolean hasExplicitVibration(@NonNull Call foregroundCall) {
+        final Uri ringtoneUri = foregroundCall.getRingtone();
+        if (ringtoneUri != null) {
+            // TODO(b/399265235) : Avoid this hidden API access for mainline
+            return Utils.hasVibration(ringtoneUri);
+        }
+        return Utils.hasVibration(RingtoneManager.getActualDefaultRingtoneUri(
+                mContext, RingtoneManager.TYPE_RINGTONE));
     }
 
     /**
@@ -839,7 +861,9 @@ public class Ringer {
             call.setUserMissed(USER_MISSED_DND_MODE);
         }
 
-        mAttributesLatch.countDown();
+        if (mAttributesLatch != null) {
+            mAttributesLatch.countDown();
+        }
         return builder.setEndEarly(endEarly)
                 .setLetDialerHandleRinging(letDialerHandleRinging)
                 .setAcquireAudioFocus(shouldAcquireAudioFocus)
