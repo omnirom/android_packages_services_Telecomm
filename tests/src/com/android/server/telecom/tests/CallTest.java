@@ -35,6 +35,7 @@ import static org.mockito.Mockito.when;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
@@ -44,7 +45,6 @@ import android.os.PersistableBundle;
 import android.os.UserHandle;
 import android.telecom.CallAttributes;
 import android.telecom.CallEndpoint;
-import android.telecom.CallerInfo;
 import android.telecom.Connection;
 import android.telecom.DisconnectCause;
 import android.telecom.ParcelableConference;
@@ -76,6 +76,7 @@ import com.android.server.telecom.PhoneNumberUtilsAdapter;
 import com.android.server.telecom.TelecomSystem;
 import com.android.server.telecom.TransactionalServiceWrapper;
 import com.android.server.telecom.ui.ToastFactory;
+import com.android.server.telecom.util.CallerInfo;
 
 import org.junit.After;
 import org.junit.Before;
@@ -86,6 +87,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 @RunWith(AndroidJUnit4.class)
@@ -102,6 +104,8 @@ public class CallTest extends TelecomTestCase {
                     | PhoneAccount.CAPABILITY_CALL_PROVIDER)
             .setIsEnabled(true)
             .build();
+    private static final PhoneAccountHandle SIM_2_HANDLE = new PhoneAccountHandle(
+            COMPONENT_NAME_2, "Sim2");
     private static final long TIMEOUT_MILLIS = 1000;
 
     @Mock private CallsManager mMockCallsManager;
@@ -158,21 +162,11 @@ public class CallTest extends TelecomTestCase {
     @Test
     @SmallTest
     public void testTransactionalCallCapabilityRemapping() {
-        // ensure when the flag is disabled, the old behavior is unchanged
-        Bundle disabledFlagExtras = new Bundle();
-        Call call = createCall("1", Call.CALL_DIRECTION_INCOMING);
-        disabledFlagExtras.putInt(CallAttributes.CALL_CAPABILITIES_KEY,
-                Connection.CAPABILITY_MERGE_CONFERENCE);
-        when(mFeatureFlags.remapTransactionalCapabilities()).thenReturn(false);
-        call.setTransactionalCapabilities(disabledFlagExtras);
-        assertTrue(call.can(Connection.CAPABILITY_MERGE_CONFERENCE));
-        // enable the bug fix flag and ensure the transactional capabilities are remapped
-        Bundle enabledFlagExtras = new Bundle();
+        Bundle extras = new Bundle();
         Call call2 = createCall("2", Call.CALL_DIRECTION_INCOMING);
-        enabledFlagExtras.putInt(CallAttributes.CALL_CAPABILITIES_KEY,
+        extras.putInt(CallAttributes.CALL_CAPABILITIES_KEY,
                 CallAttributes.SUPPORTS_SET_INACTIVE);
-        when(mFeatureFlags.remapTransactionalCapabilities()).thenReturn(true);
-        call2.setTransactionalCapabilities(enabledFlagExtras);
+        call2.setTransactionalCapabilities(extras);
         assertTrue(call2.can(Connection.CAPABILITY_HOLD));
         assertTrue(call2.can(Connection.CAPABILITY_SUPPORT_HOLD));
     }
@@ -242,7 +236,6 @@ public class CallTest extends TelecomTestCase {
 
     @Test
     public void testMultipleCachedCallEvents() {
-        when(mFeatureFlags.cacheCallAudioCallbacks()).thenReturn(true);
         when(mFeatureFlags.cacheCallEvents()).thenReturn(true);
         TransactionalServiceWrapper tsw = Mockito.mock(TransactionalServiceWrapper.class);
         Call call = createCall("1", Call.CALL_DIRECTION_INCOMING);
@@ -280,7 +273,6 @@ public class CallTest extends TelecomTestCase {
 
     @Test
     public void testMultipleCachedMuteStateChanges() {
-        when(mFeatureFlags.cacheCallAudioCallbacks()).thenReturn(true);
         TransactionalServiceWrapper tsw = Mockito.mock(TransactionalServiceWrapper.class);
         Call call = createCall("1", Call.CALL_DIRECTION_INCOMING);
 
@@ -308,7 +300,6 @@ public class CallTest extends TelecomTestCase {
 
     @Test
     public void testCacheAfterServiceSet() {
-        when(mFeatureFlags.cacheCallAudioCallbacks()).thenReturn(true);
         when(mFeatureFlags.cacheCallEvents()).thenReturn(true);
         TransactionalServiceWrapper tsw = Mockito.mock(TransactionalServiceWrapper.class);
         Call call = createCall("1", Call.CALL_DIRECTION_INCOMING);
@@ -324,7 +315,6 @@ public class CallTest extends TelecomTestCase {
 
     @Test
     public void testMultipleCachedCurrentEndpointChanges() {
-        when(mFeatureFlags.cacheCallAudioCallbacks()).thenReturn(true);
         TransactionalServiceWrapper tsw = Mockito.mock(TransactionalServiceWrapper.class);
         CallEndpoint earpiece = Mockito.mock(CallEndpoint.class);
         CallEndpoint speaker = Mockito.mock(CallEndpoint.class);
@@ -358,7 +348,6 @@ public class CallTest extends TelecomTestCase {
 
     @Test
     public void testMultipleCachedAvailableEndpointChanges() {
-        when(mFeatureFlags.cacheCallAudioCallbacks()).thenReturn(true);
         TransactionalServiceWrapper tsw = Mockito.mock(TransactionalServiceWrapper.class);
         CallEndpoint earpiece = Mockito.mock(CallEndpoint.class);
         CallEndpoint bluetooth = Mockito.mock(CallEndpoint.class);
@@ -397,7 +386,6 @@ public class CallTest extends TelecomTestCase {
      */
     @Test
     public void testAllCachedCallbacks() {
-        when(mFeatureFlags.cacheCallAudioCallbacks()).thenReturn(true);
         when(mFeatureFlags.cacheCallEvents()).thenReturn(true);
         TransactionalServiceWrapper tsw = Mockito.mock(TransactionalServiceWrapper.class);
         CallEndpoint earpiece = Mockito.mock(CallEndpoint.class);
@@ -999,7 +987,6 @@ public class CallTest extends TelecomTestCase {
         @Test
     @SmallTest
     public void testOnConnectionEventNotifiesListener() {
-        when(mFeatureFlags.enableCallSequencing()).thenReturn(true);
         Call.Listener listener = mock(Call.Listener.class);
         Call call = createCall("1");
         call.addListener(listener);
@@ -1141,12 +1128,82 @@ public class CallTest extends TelecomTestCase {
         assertFalse(call.isRespondViaSmsCapable());
     }
 
+    @Test
+    public void testLogTransactionalCall() {
+        when(mFeatureFlags.integratedCallLogs()).thenReturn(true);
+        Call call = new Call(
+                "1", /* callId */
+                mContext,
+                mMockCallsManager,
+                mLock,
+                null /* ConnectionServiceRepository */,
+                mMockPhoneNumberUtilsAdapter,
+                TEST_ADDRESS,
+                null /* GatewayInfo */,
+                null /* connectionManagerPhoneAccountHandle */,
+                SIM_1_HANDLE,
+                Call.CALL_DIRECTION_UNDEFINED,
+                false /* shouldAttachToExistingConnection*/,
+                true /* isConference */,
+                mMockClockProxy,
+                mMockToastProxy,
+                mFeatureFlags);
+
+        call.setIsTransactionalCall(true);
+        PackageManager pm = mock(PackageManager.class);
+        ResolveInfo resolveInfo = mock(ResolveInfo.class);
+        when(mContext.getPackageManager()).thenReturn(pm);
+        when(pm.queryIntentActivities(any(Intent.class), eq(PackageManager.MATCH_ALL)))
+                .thenReturn(List.of(resolveInfo));
+        // Verify that we will log the transactional call when the integrated call logs flags is
+        // enabled.
+        assertTrue(call.isLoggedTransactional());
+    }
+
+    @Test
+    public void testDoNotLogSelfManagedCall() {
+        when(mFeatureFlags.integratedCallLogs()).thenReturn(true);
+        Call call = new Call(
+                "1", /* callId */
+                mContext,
+                mMockCallsManager,
+                mLock,
+                null /* ConnectionServiceRepository */,
+                mMockPhoneNumberUtilsAdapter,
+                TEST_ADDRESS,
+                null /* GatewayInfo */,
+                null /* connectionManagerPhoneAccountHandle */,
+                SIM_1_HANDLE,
+                Call.CALL_DIRECTION_UNDEFINED,
+                false /* shouldAttachToExistingConnection*/,
+                true /* isConference */,
+                mMockClockProxy,
+                mMockToastProxy,
+                mFeatureFlags);
+
+        call.setIsSelfManaged(true);
+        // Verify that we will not log the self-managed call when the integrated call logs flags is
+        // enabled.
+        assertFalse(call.isLoggedSelfManaged());
+    }
+
     private Call createCall(String id) {
         return createCall(id, Call.CALL_DIRECTION_UNDEFINED);
     }
 
     private Call createCall(String id, int callDirection) {
         return createCall(id, callDirection, TEST_ADDRESS);
+    }
+
+    @Test
+    @SmallTest
+    public void testNetworkIdentifiedEmergencyCallUpdateProperty() {
+        Call call = createCall("1", Call.CALL_DIRECTION_INCOMING);
+        call.setConnectionProperties(
+                Connection.PROPERTY_NETWORK_IDENTIFIED_EMERGENCY_CALL);
+        // Setting the NIE connection property should make the call
+        // an emergency call.
+        assertTrue(call.isEmergencyCall());
     }
 
     private Call createCall(String id, int callDirection, Uri address) {

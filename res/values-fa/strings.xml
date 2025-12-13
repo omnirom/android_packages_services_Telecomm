@@ -19,6 +19,8 @@
     <string name="telecommAppLabel" product="default" msgid="1825598513414129827">"تماس‌های تلفنی"</string>
     <string name="userCallActivityLabel" product="default" msgid="3605391260292846248">"تلفن"</string>
     <string name="unknown" msgid="6993977514360123431">"ناشناس"</string>
+    <string name="private_num" msgid="7971471360030811411">"شماره خصوصی"</string>
+    <string name="payphone" msgid="7652075262156192657">"تلفن عمومی"</string>
     <string name="notification_missedCallTitle" msgid="5060387047205532974">"تماس بی پاسخ"</string>
     <string name="notification_missedWorkCallTitle" msgid="6965463282259034953">"تماس کاری ازدست‌رفته"</string>
     <string name="notification_missedCallsTitle" msgid="3910479625507893809">"تماس‌های بی پاسخ"</string>
@@ -43,7 +45,7 @@
     <string name="respond_via_sms_setting_title_2" msgid="4914853536609553457">"ویرایش پاسخ‌های سریع"</string>
     <string name="respond_via_sms_setting_summary" msgid="8054571501085436868"></string>
     <string name="respond_via_sms_edittext_dialog_title" msgid="6579353156073272157">"پاسخ سریع"</string>
-    <string name="respond_via_sms_confirmation_format" msgid="2932395476561267842">"پیام به <xliff:g id="PHONE_NUMBER">%s</xliff:g> ارسال شد."</string>
+    <string name="respond_via_sms_confirmation_format" msgid="2619774063232350285">"درحال ارسال پیام به <xliff:g id="PHONE_NUMBER">%s</xliff:g>."</string>
     <string name="respond_via_sms_failure_format" msgid="5198680980054596391">"پیام به <xliff:g id="PHONE_NUMBER">%s</xliff:g> ارسال نشد."</string>
     <string name="enable_account_preference_title" msgid="6949224486748457976">"حساب‌های تماس"</string>
     <string name="outgoing_call_not_allowed_user_restriction" msgid="3424338207838851646">"فقط تماس‌های اضطراری مجاز است."</string>
@@ -138,7 +140,11 @@
     <string name="callFailed_too_many_calls_include_merge" msgid="2234495082825519920">"نمی‌توانید تماسی برقرار کنید، زیرا هم‌اکنون دو تماس دیگر درحال انجام است. قبل‌از برقراری تماس جدید، یکی از تماس‌ها را قطع کنید یا آن‌ها را به‌صورت کنفرانسی ادغام کنید."</string>
     <string name="callFailed_too_many_calls_exclude_merge" msgid="8616011288480453495">"نمی‌توانید تماسی برقرار کنید چون دو تماس دیگر ازقبل درحال انجام است. قبل‌از برقراری تماس جدید، یکی از تماس‌ها را قطع کنید."</string>
     <string name="callFailed_unholdable_call" msgid="7580834131274566524">"نمی‌توانید تماسی برقرار کنید زیرا هم‌اکنون تماسی بدون قابلیت انتظار درحال انجام است. قبل‌از برقراری تماس جدید، تماس را قطع کنید."</string>
+    <string name="callSwapFailed_unholdable_call" msgid="4779540296319850415">"تماس فعال تعویض نمی‌شود چون از درانتظار گذاشتن پشتیبانی نمی‌کند. برای فعال کردن تماس نگه‌داشته‌شده، تماس را قطع کنید."</string>
     <string name="callFailed_already_ringing" msgid="7931232733958098270">"نمی‌توانید تماسی برقرار کنید، چون تماس ورودی بی‌پاسخی درحال انجام است. قبل‌از برقراری تماس جدید، به تماس ورودی پاسخ دهید یا آن را رد کنید."</string>
     <string name="callFailed_reject_mmi" msgid="5219280796733595167">"‏این کد MMI برای تماس در چندین حساب دردسترس نیست."</string>
+    <string name="call_hangup_fail_during_merge" msgid="4216015878956379200">"تماس را نمی‌توان در طول ادغام کردن قطع کرد."</string>
     <string name="emergencyCall_reject_mmi" msgid="5056319534549705785">"‏امکان شماره‌گیری کدهای MMI حین تماس اضطراری وجود ندارد"</string>
+    <string name="noApplications" msgid="1703149220378476198">"‏هیچ برنامه‌ای نمی‎تواند این کنش را انجام دهد."</string>
+    <string name="android_system_label" msgid="2730611410547215779">"‏سیستم Android"</string>
 </resources>

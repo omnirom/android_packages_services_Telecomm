@@ -19,6 +19,8 @@
     <string name="telecommAppLabel" product="default" msgid="1825598513414129827">"Telefonické hovory"</string>
     <string name="userCallActivityLabel" product="default" msgid="3605391260292846248">"Telefón"</string>
     <string name="unknown" msgid="6993977514360123431">"Neznáme"</string>
+    <string name="private_num" msgid="7971471360030811411">"Súkromné číslo"</string>
+    <string name="payphone" msgid="7652075262156192657">"Telefónny automat"</string>
     <string name="notification_missedCallTitle" msgid="5060387047205532974">"Zmeškaný hovor"</string>
     <string name="notification_missedWorkCallTitle" msgid="6965463282259034953">"Zmeškaný pracovný hovor"</string>
     <string name="notification_missedCallsTitle" msgid="3910479625507893809">"Zmeškané hovory"</string>
@@ -43,7 +45,7 @@
     <string name="respond_via_sms_setting_title_2" msgid="4914853536609553457">"Upraviť rýchle odpovede"</string>
     <string name="respond_via_sms_setting_summary" msgid="8054571501085436868"></string>
     <string name="respond_via_sms_edittext_dialog_title" msgid="6579353156073272157">"Rýchla odpoveď"</string>
-    <string name="respond_via_sms_confirmation_format" msgid="2932395476561267842">"Správa bola odoslaná na číslo <xliff:g id="PHONE_NUMBER">%s</xliff:g>."</string>
+    <string name="respond_via_sms_confirmation_format" msgid="2619774063232350285">"Odosiela sa správa na číslo <xliff:g id="PHONE_NUMBER">%s</xliff:g>."</string>
     <string name="respond_via_sms_failure_format" msgid="5198680980054596391">"Správu sa nepodarilo odoslať na číslo <xliff:g id="PHONE_NUMBER">%s</xliff:g>."</string>
     <string name="enable_account_preference_title" msgid="6949224486748457976">"Telefónne účty"</string>
     <string name="outgoing_call_not_allowed_user_restriction" msgid="3424338207838851646">"Povolené sú len tiesňové volania."</string>
@@ -138,7 +140,11 @@
     <string name="callFailed_too_many_calls_include_merge" msgid="2234495082825519920">"Hovor sa nedá uskutočniť, pretože už prebiehajú dva hovory. Odpojte jeden hovor alebo ich zlúčte do konferencie a až potom uskutočnite nový hovor."</string>
     <string name="callFailed_too_many_calls_exclude_merge" msgid="8616011288480453495">"Hovor sa nedá uskutočniť, pretože už prebiehajú dva hovory. Pred uskutočnením nového hovoru ukončite jeden z prebiehajúcich hovorov."</string>
     <string name="callFailed_unholdable_call" msgid="7580834131274566524">"Hovor sa nedá uskutočniť, pretože prebieha hovor, ktorý sa nedá podržať. Pred uskutočnením nového hovoru najprv ukončite ten prebiehajúci."</string>
+    <string name="callSwapFailed_unholdable_call" msgid="4779540296319850415">"Aktívny hovor sa nedá prepnúť, pretože nepodporuje podržanie. Ak chcete aktivovať podržaný hovor, ukončite prebiehajúci hovor."</string>
     <string name="callFailed_already_ringing" msgid="7931232733958098270">"Hovor sa nedá uskutočniť, pretože máte neprijatý prichádzajúci hovor. Prijmite alebo odmietnite prichádzajúci hovor a až potom uskutočnite nový hovor."</string>
     <string name="callFailed_reject_mmi" msgid="5219280796733595167">"Tento kód MMI nie je k dispozícii pre hovory v rámci viacerých účtov."</string>
+    <string name="call_hangup_fail_during_merge" msgid="4216015878956379200">"Počas zlúčenia nie je možné hovor odpojiť."</string>
     <string name="emergencyCall_reject_mmi" msgid="5056319534549705785">"Kódy MMI nemožno vytočiť počas tiesňového volania."</string>
+    <string name="noApplications" msgid="1703149220378476198">"Túto akciu nemôžu vykonávať žiadne aplikácie."</string>
+    <string name="android_system_label" msgid="2730611410547215779">"Systém Android"</string>
 </resources>

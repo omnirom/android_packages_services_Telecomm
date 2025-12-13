@@ -41,6 +41,7 @@ import com.android.server.telecom.LogUtils;
 import com.android.server.telecom.PhoneAccountRegistrar;
 import com.android.server.telecom.TelecomSystem;
 import com.android.server.telecom.Timeouts;
+import com.android.server.telecom.flags.FeatureFlags;
 
 /**
  * A single instance of call redirection processor that handles the call redirection with
@@ -95,7 +96,8 @@ public class CallRedirectionProcessor implements CallRedirectionCallback {
             try {
                 // Telecom does not perform user interactions for carrier call redirection.
                 mService.placeCall(new CallRedirectionAdapter(), mProcessedDestinationUri,
-                        mPhoneAccountHandle, mAllowInteractiveResponse
+                    mDestinationWithPostDialDigitsRemovedUri, mPhoneAccountHandle,
+                    mAllowInteractiveResponse
                                 && mServiceType.equals(SERVICE_TYPE_USER_DEFINED));
                 Log.addEvent(mCall, mServiceType.equals(SERVICE_TYPE_USER_DEFINED)
                         ? LogUtils.Events.REDIRECTION_SENT_USER
@@ -136,8 +138,12 @@ public class CallRedirectionProcessor implements CallRedirectionCallback {
             Log.i(this, "notifyTimeout: call redirection has timed out so "
                     + "unbinding the connection");
             if (mConnection != null) {
-                // We still need to call unbind even if the service disconnected.
-                mContext.unbindService(mConnection);
+                try {
+                    // We still need to call unbind even if the service disconnected.
+                    mContext.unbindService(mConnection);
+                } catch (IllegalArgumentException e) {
+                    Log.e(this, e, "Error unbinding the connection");
+                }
                 mConnection = null;
             }
             mService = null;
@@ -285,7 +291,12 @@ public class CallRedirectionProcessor implements CallRedirectionCallback {
             = "user_defined_ask_for_confirm";
 
     private PhoneAccountHandle mPhoneAccountHandle;
+
+    /**
+     * The post-dial digits extracted from {@link #mDestinationUri}.
+     */
     private Uri mDestinationUri;
+
     /**
      * Try to send the implemented service with processed destination uri by formatting it to E.164
      * and removing post dial digits.
@@ -297,6 +308,11 @@ public class CallRedirectionProcessor implements CallRedirectionCallback {
      * {@link #mProcessedDestinationUri}.
      */
     private String mPostDialDigits;
+
+    /**
+     * The destination uri with post dial digits removed from {@link #mDestinationUri}
+     */
+    private Uri mDestinationWithPostDialDigitsRemovedUri;
 
     /**
      * Indicates if Telecom should cancel the call when the whole call redirection finishes.
@@ -317,6 +333,8 @@ public class CallRedirectionProcessor implements CallRedirectionCallback {
      */
     private boolean mIsCarrierRedirectionPending = false;
 
+    private final  FeatureFlags mFeatureFlags;
+
     public CallRedirectionProcessor(
             Context context,
             CallsManager callsManager,
@@ -325,7 +343,8 @@ public class CallRedirectionProcessor implements CallRedirectionCallback {
             PhoneAccountRegistrar phoneAccountRegistrar,
             GatewayInfo gatewayInfo,
             boolean speakerphoneOn,
-            int videoState) {
+            int videoState,
+            FeatureFlags featureFlags) {
         mContext = context;
         mCallsManager = callsManager;
         mCall = call;
@@ -336,16 +355,19 @@ public class CallRedirectionProcessor implements CallRedirectionCallback {
         mVideoState = videoState;
         mTimeoutsAdapter = callsManager.getTimeoutsAdapter();
         mTelecomLock = callsManager.getLock();
+        mFeatureFlags = featureFlags;
         /**
          * The current rule to decide whether the implemented {@link CallRedirectionService} should
          * allow interactive responses with users is only based on whether it is in car mode.
          */
         mAllowInteractiveResponse = !callsManager.getSystemStateHelper().isCarModeOrProjectionActive();
         mCallRedirectionProcessorHelper = new CallRedirectionProcessorHelper(
-                context, callsManager, phoneAccountRegistrar);
+                context, callsManager, phoneAccountRegistrar, mFeatureFlags);
         mProcessedDestinationUri = mCallRedirectionProcessorHelper.formatNumberForRedirection(
                 mDestinationUri);
         mPostDialDigits = mCallRedirectionProcessorHelper.getPostDialDigits(mDestinationUri);
+        mDestinationWithPostDialDigitsRemovedUri =
+            mCallRedirectionProcessorHelper.removePostDialDigits(mDestinationUri);
     }
 
     @Override
@@ -428,8 +450,8 @@ public class CallRedirectionProcessor implements CallRedirectionCallback {
     private void processTimeoutForCallRedirection(String serviceType) {
         long timeout = serviceType.equals(SERVICE_TYPE_USER_DEFINED) ?
             mTimeoutsAdapter.getUserDefinedCallRedirectionTimeoutMillis(
-                mContext.getContentResolver()) : mTimeoutsAdapter
-            .getCarrierCallRedirectionTimeoutMillis(mContext.getContentResolver());
+                mContext, mFeatureFlags) : mTimeoutsAdapter
+            .getCarrierCallRedirectionTimeoutMillis(mContext, mFeatureFlags);
 
         mHandler.postDelayed(new Runnable("CRP.pTFCR", null) {
             @Override

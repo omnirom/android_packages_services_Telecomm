@@ -19,6 +19,8 @@
     <string name="telecommAppLabel" product="default" msgid="1825598513414129827">"Puhelut"</string>
     <string name="userCallActivityLabel" product="default" msgid="3605391260292846248">"Puhelin"</string>
     <string name="unknown" msgid="6993977514360123431">"Tuntematon"</string>
+    <string name="private_num" msgid="7971471360030811411">"Yksityinen numero"</string>
+    <string name="payphone" msgid="7652075262156192657">"Yleisöpuhelin"</string>
     <string name="notification_missedCallTitle" msgid="5060387047205532974">"Vastaamatta jäänyt puhelu"</string>
     <string name="notification_missedWorkCallTitle" msgid="6965463282259034953">"Vastaamaton työpuhelu"</string>
     <string name="notification_missedCallsTitle" msgid="3910479625507893809">"Vastaamattomat puhelut"</string>
@@ -43,7 +45,7 @@
     <string name="respond_via_sms_setting_title_2" msgid="4914853536609553457">"Muokkaa pikavastausta"</string>
     <string name="respond_via_sms_setting_summary" msgid="8054571501085436868"></string>
     <string name="respond_via_sms_edittext_dialog_title" msgid="6579353156073272157">"Pikavastaukset"</string>
-    <string name="respond_via_sms_confirmation_format" msgid="2932395476561267842">"Viesti lähetetty numeroon <xliff:g id="PHONE_NUMBER">%s</xliff:g>."</string>
+    <string name="respond_via_sms_confirmation_format" msgid="2619774063232350285">"Lähetetään viestiä numeroon <xliff:g id="PHONE_NUMBER">%s</xliff:g>."</string>
     <string name="respond_via_sms_failure_format" msgid="5198680980054596391">"Viestin lähetys numeroon <xliff:g id="PHONE_NUMBER">%s</xliff:g> epäonnistui."</string>
     <string name="enable_account_preference_title" msgid="6949224486748457976">"Puhelutilit"</string>
     <string name="outgoing_call_not_allowed_user_restriction" msgid="3424338207838851646">"Vain hätäpuhelut sallittu"</string>
@@ -138,7 +140,11 @@
     <string name="callFailed_too_many_calls_include_merge" msgid="2234495082825519920">"Puhelua ei voi soittaa, koska kaksi puhelua on jo käynnissä. Katkaise toinen puheluista tai yhdistä ne puhelinneuvotteluksi ennen uuden puhelun soittamista."</string>
     <string name="callFailed_too_many_calls_exclude_merge" msgid="8616011288480453495">"Puhelua ei voi soittaa, koska kaksi puhelua on jo käynnissä. Katkaise toinen puheluista ennen uuden puhelun soittamista."</string>
     <string name="callFailed_unholdable_call" msgid="7580834131274566524">"Puhelua ei voi soittaa, koska puhelua ei voi asettaa pitoon. Katkaise puhelu ennen uuden puhelun soittamista."</string>
+    <string name="callSwapFailed_unholdable_call" msgid="4779540296319850415">"Aktiivista puhelua ei voi vaihtaa, koska se ei tue pitoa. Lopeta puhelu, jos haluat vastata pidossa olevaan puheluun."</string>
     <string name="callFailed_already_ringing" msgid="7931232733958098270">"Puhelua ei voi soittaa, koska saapuvaan puheluun ei ole vielä vastattu. Vastaa saapuvaan puheluun tai hylkää se, ennen kuin soitat uuden puhelun."</string>
     <string name="callFailed_reject_mmi" msgid="5219280796733595167">"MMI-koodi ei ole käytettävissä useilla tileillä käytävissä puheluissa."</string>
+    <string name="call_hangup_fail_during_merge" msgid="4216015878956379200">"Puhelua ei voi katkaista yhdistämisen aikana."</string>
     <string name="emergencyCall_reject_mmi" msgid="5056319534549705785">"MMI-koodeja ei voi käyttää hätäpuhelun aikana."</string>
+    <string name="noApplications" msgid="1703149220378476198">"Yksikään sovellus ei voi suorittaa tätä toimintoa."</string>
+    <string name="android_system_label" msgid="2730611410547215779">"Android-järjestelmä"</string>
 </resources>

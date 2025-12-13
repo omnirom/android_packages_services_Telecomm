@@ -19,6 +19,8 @@
     <string name="telecommAppLabel" product="default" msgid="1825598513414129827">"Phone Calls"</string>
     <string name="userCallActivityLabel" product="default" msgid="3605391260292846248">"ទូរសព្ទ"</string>
     <string name="unknown" msgid="6993977514360123431">"មិន​ស្គាល់"</string>
+    <string name="private_num" msgid="7971471360030811411">"លេខ​ឯកជន"</string>
+    <string name="payphone" msgid="7652075262156192657">"ទូរសព្ទសាធារណៈ"</string>
     <string name="notification_missedCallTitle" msgid="5060387047205532974">"ខកខាន​ទទួល"</string>
     <string name="notification_missedWorkCallTitle" msgid="6965463282259034953">"បានខកខានការហៅចូលពីកន្លែងការងារ"</string>
     <string name="notification_missedCallsTitle" msgid="3910479625507893809">"ខកខាន​ទទួល"</string>
@@ -43,7 +45,7 @@
     <string name="respond_via_sms_setting_title_2" msgid="4914853536609553457">"កែ​ការ​ឆ្លើយតប​រហ័ស"</string>
     <string name="respond_via_sms_setting_summary" msgid="8054571501085436868"></string>
     <string name="respond_via_sms_edittext_dialog_title" msgid="6579353156073272157">"ឆ្លើយតប​រហ័ស"</string>
-    <string name="respond_via_sms_confirmation_format" msgid="2932395476561267842">"បាន​ផ្ញើ​សារ​ទៅ <xliff:g id="PHONE_NUMBER">%s</xliff:g> ។"</string>
+    <string name="respond_via_sms_confirmation_format" msgid="2619774063232350285">"កំពុង​ផ្ញើសារទៅ <xliff:g id="PHONE_NUMBER">%s</xliff:g>។"</string>
     <string name="respond_via_sms_failure_format" msgid="5198680980054596391">"មិន​អាច​ផ្ញើ​សារ​ទៅ <xliff:g id="PHONE_NUMBER">%s</xliff:g> បាន​ទេ។"</string>
     <string name="enable_account_preference_title" msgid="6949224486748457976">"គណនីហៅទូរសព្ទ"</string>
     <string name="outgoing_call_not_allowed_user_restriction" msgid="3424338207838851646">"អនុញ្ញាតតែការហៅពេលមានអាសន្នប៉ុណ្ណោះ"</string>
@@ -138,7 +140,11 @@
     <string name="callFailed_too_many_calls_include_merge" msgid="2234495082825519920">"មិន​អាច​ធ្វើ​ការហៅ​ទូរសព្ទ​បាន​ទេ ដោយសារ​មាន​ការហៅ​ទូរសព្ទ​ពីរ​កំពុង​ដំណើរការ​រួច​ហើយ។ ផ្ដាច់​ការហៅ​ទូរសព្ទ​មួយ ឬ​ដាក់​ការហៅ​ទូរសព្ទ​ទាំងនេះ​ចូល​គ្នា​ជា​ការហៅជាក្រុម មុន​នឹង​ធ្វើ​ការហៅ​ទូរសព្ទ​ថ្មី។"</string>
     <string name="callFailed_too_many_calls_exclude_merge" msgid="8616011288480453495">"មិនអាច​ធ្វើ​ការហៅ​ទូរសព្ទ​បានទេ ដោយសារ​មាន​ការហៅ​ទូរសព្ទ​ពីរ​កំពុង​ដំណើរការ​ស្រាប់​ហើយ។ សូមផ្ដាច់​ការហៅ​ទូរសព្ទ​មួយសិន មុនពេល​ធ្វើការហៅ​ទូរសព្ទថ្មី។"</string>
     <string name="callFailed_unholdable_call" msgid="7580834131274566524">"មិនអាច​ធ្វើការហៅ​ទូរសព្ទ​បានទេ ដោយសារ​មានការហៅ​ទូរសព្ទ​ដែលមិនអាច​ដាក់ឱ្យ​រង់ចាំបាន។ សូមផ្ដាច់​ការហៅ​ទូរសព្ទ​នោះសិន មុនពេល​ធ្វើការហៅ​ទូរសព្ទថ្មី។"</string>
+    <string name="callSwapFailed_unholdable_call" msgid="4779540296319850415">"មិនអាចប្ដូរ​ការហៅ​ទូរសព្ទ​ដែលកំពុង​ដំណើរការ​បានទេ ដោយសារ​វាមិនអាច​ដាក់ឱ្យ​រង់ចាំបាន។ សូមផ្ដាច់​ការហៅទូរសព្ទ​នោះ ដើម្បី​ដំណើរការ​ការហៅទូរសព្ទ​ដែលបាន​ដាក់ឱ្យ​រង់ចាំ។"</string>
     <string name="callFailed_already_ringing" msgid="7931232733958098270">"មិន​អាច​ធ្វើ​ការហៅ​ទូរសព្ទ​បាន​ទេ ដោយសារ​មាន​ការហៅ​ចូល​មួយ​ដែល​មិន​បាន​ឆ្លើយតប។ ឆ្លើយតប ឬ​ច្រានចោល​ការហៅ​ចូល មុន​ពេល​ធ្វើ​ការហៅ​ទូរសព្ទ​ថ្មី។"</string>
     <string name="callFailed_reject_mmi" msgid="5219280796733595167">"មិនអាចប្រើលេខកូដ MMI នេះសម្រាប់ការហៅទូរសព្ទនៅលើ​គណនី​ច្រើនបានទេ។"</string>
+    <string name="call_hangup_fail_during_merge" msgid="4216015878956379200">"មិនអាច​ផ្ដាច់​ការហៅទូរសព្ទ ក្នុង​អំឡុងពេល​ដាក់​ចូលគ្នា​បានទេ។"</string>
     <string name="emergencyCall_reject_mmi" msgid="5056319534549705785">"មិនអាច​ចុចលេខ​កូដ MMI ក្នុង​អំឡុងពេល​ហៅ​ទៅលេខ​សង្គ្រោះ​បន្ទាន់​បានទេ។"</string>
+    <string name="noApplications" msgid="1703149220378476198">"មិន​មាន​កម្មវិធី​ដែលអាចធ្វើ​សកម្មភាពនេះ​បាន​ទេ។"</string>
+    <string name="android_system_label" msgid="2730611410547215779">"ប្រព័ន្ធ Android"</string>
 </resources>

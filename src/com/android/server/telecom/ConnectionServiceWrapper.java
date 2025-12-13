@@ -28,6 +28,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.location.LocationRequest;
 import android.net.Uri;
+import android.os.BadParcelableException;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.CancellationSignal;
@@ -66,6 +67,7 @@ import com.android.internal.telecom.IVideoProvider;
 import com.android.internal.telecom.RemoteServiceCallback;
 import com.android.internal.util.Preconditions;
 import com.android.server.telecom.flags.FeatureFlags;
+import com.android.server.telecom.util.TelecomBundleUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -393,6 +395,55 @@ public class ConnectionServiceWrapper extends ServiceBinder implements
         }
 
         @Override
+        public void setAudioProcessing(String callId, Session.Info sessionInfo, int useCase) {
+            Log.startSession(sessionInfo, LogUtils.Sessions.CSW_SET_AUDIO_PROCESSING,
+                mPackageAbbreviation);
+            long token = Binder.clearCallingIdentity();
+            try {
+                synchronized (mLock) {
+                    logIncoming("setAudioProcessing %s", callId);
+                    Call call = mCallIdMapper.getCall(callId);
+                    if (call != null && call.isExternalCall()) {
+                        mCallsManager.markCallAsAudioProcessing(call, useCase);
+                    } else {
+                        throw new IllegalStateException("Call is not external.");
+                        // Log.w(this, "setAudioProcessing, unknown call id: %s", msg.obj);
+                    }
+                }
+            } catch (Throwable t) {
+                Log.e(ConnectionServiceWrapper.this, t, "");
+                throw t;
+            } finally {
+                Binder.restoreCallingIdentity(token);
+                Log.endSession();
+            }
+        }
+
+        @Override
+        public void setSimulatedRinging(String callId, Session.Info sessionInfo) {
+            Log.startSession(sessionInfo, LogUtils.Sessions.CSW_SET_SIMULATED_RINGING,
+                mPackageAbbreviation);
+            long token = Binder.clearCallingIdentity();
+            try {
+                synchronized (mLock) {
+                    logIncoming("setSimulatedRinging %s", callId);
+                    Call call = mCallIdMapper.getCall(callId);
+                    if (call != null && call.isExternalCall()) {
+                        mCallsManager.markCallAsSimulatedRinging(call);
+                    } else {
+                        // Log.w(this, "setSimulatedRinging, unknown call id: %s", msg.obj);
+                    }
+                }
+            } catch (Throwable t) {
+                Log.e(ConnectionServiceWrapper.this, t, "");
+                throw t;
+            } finally {
+                Binder.restoreCallingIdentity(token);
+                Log.endSession();
+            }
+        }
+
+        @Override
         public void setRingbackRequested(String callId, boolean ringback,
                 Session.Info sessionInfo) {
             Log.startSession(sessionInfo, "CSW.SRR", mPackageAbbreviation);
@@ -680,6 +731,133 @@ public class ConnectionServiceWrapper extends ServiceBinder implements
         }
 
         @Override
+        public void addConferenceCallFromConnection(String callId,
+                ParcelableConference parcelableConference, Session.Info sessionInfo) {
+            Log.startSession(sessionInfo, LogUtils.Sessions.CSW_ADD_CONFERENCE_CALL_FROM_CONN,
+                    mPackageAbbreviation);
+
+            Log.i(this, "addConferenceCallFromConnection: callId = " + callId);
+
+            UserHandle callingUserHandle = Binder.getCallingUserHandle();
+            // Check status hints image for cross user access
+            if (parcelableConference.getStatusHints() != null) {
+                Icon icon = parcelableConference.getStatusHints().getIcon();
+                parcelableConference.getStatusHints().setIcon(StatusHints
+                        .validateAccountIconUserBoundary(icon, callingUserHandle));
+            }
+
+            if (parcelableConference.getConnectElapsedTimeMillis() != 0
+                    && mContext.checkCallingOrSelfPermission(MODIFY_PHONE_STATE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                Log.w(this, "addConferenceCall from caller without permission!");
+                parcelableConference = new ParcelableConference.Builder(
+                        parcelableConference.getPhoneAccount(),
+                        parcelableConference.getState())
+                        .setConnectionCapabilities(parcelableConference.getConnectionCapabilities())
+                        .setConnectionProperties(parcelableConference.getConnectionProperties())
+                        .setConnectionIds(parcelableConference.getConnectionIds())
+                        .setVideoAttributes(parcelableConference.getVideoProvider(),
+                                parcelableConference.getVideoState())
+                        .setStatusHints(parcelableConference.getStatusHints())
+                        .setExtras(parcelableConference.getExtras())
+                        .setAddress(parcelableConference.getHandle(),
+                                parcelableConference.getHandlePresentation())
+                        // no caller display name set.
+                        .setDisconnectCause(parcelableConference.getDisconnectCause())
+                        .setRingbackRequested(parcelableConference.isRingbackRequested())
+                        .build();
+            }
+
+            long token = Binder.clearCallingIdentity();
+            try {
+                synchronized (mLock) {
+                    Call existingTelecomCall = mCallIdMapper.getCall(callId);
+                    if (existingTelecomCall == null) {
+                        Log.e(this, new Exception(), "Attempting to create a "
+                                + "conference call using an existing call id that cannot be found "
+                                + "in telecom. Call ID = " + callId);
+                        return;
+                    }
+                    logIncoming("addConferenceCallFromConnection %s %s [%s]", callId,
+                            parcelableConference, parcelableConference.getConnectionIds());
+
+                    // Make sure that there's at least one valid call. For remote connections
+                    // we'll get a add conference msg from both the remote connection service
+                    // and from the real connection service.
+                    boolean hasValidCalls = false;
+                    for (String connId : parcelableConference.getConnectionIds()) {
+                        if (mCallIdMapper.getCall(connId) != null) {
+                            hasValidCalls = true;
+                        }
+                    }
+                    // But don't bail out if the connection count is 0, because that is a valid
+                    // IMS conference state.
+                    if (!hasValidCalls && parcelableConference.getConnectionIds().size() > 0) {
+                        Log.i(this, "Attempting to add a conference with no valid calls");
+                        return;
+                    }
+
+                    Bundle connectionExtras = parcelableConference.getExtras();
+
+                    String connectIdToCheck = null;
+                    if (connectionExtras != null && connectionExtras
+                            .containsKey(Connection.EXTRA_ORIGINAL_CONNECTION_ID)) {
+                        // Conference was added via a connection manager, see if its original id is
+                        // known.
+                        connectIdToCheck = connectionExtras
+                                .getString(Connection.EXTRA_ORIGINAL_CONNECTION_ID);
+                    } else {
+                        connectIdToCheck = callId;
+                    }
+
+                    // Check to see if this conference has already been added.
+                    Call alreadyAddedConnection = mCallsManager
+                            .getAlreadyAddedConnection(connectIdToCheck);
+                    if (alreadyAddedConnection != null && mCallIdMapper.getCall(callId) == null) {
+                        Log.i(this, "addConferenceCallFromConnection: attempting to "
+                                + "add the conference via a connection mgr");
+                        // We are currently attempting to add the conference via a connection mgr,
+                        // and the originating ConnectionService has already added it.  Instead of
+                        // making a new Telecom call, we will simply add it to the ID mapper here,
+                        // and replace the ConnectionService on the call.
+                        mCallIdMapper.addCall(alreadyAddedConnection, callId);
+                        alreadyAddedConnection.replaceConnectionService(
+                                ConnectionServiceWrapper.this);
+                    } else {
+                        // Convert the existing Telecom call into a conference:
+                        existingTelecomCall.setConferenceState(true);
+
+                        // Set the attributes of the parcelableConference for the Telecom call:
+                        existingTelecomCall.setTargetPhoneAccount(
+                                parcelableConference.getPhoneAccount());
+                        existingTelecomCall.setConnectionProperties(
+                                parcelableConference.getConnectionProperties());
+                        existingTelecomCall.setConnectionCapabilities(
+                                parcelableConference.getConnectionCapabilities());
+                        existingTelecomCall.setCallDirection(
+                                parcelableConference.getCallDirection());
+                        existingTelecomCall.setVideoProvider(
+                                parcelableConference.getVideoProvider());
+                        existingTelecomCall.setVideoState(parcelableConference.getVideoState());
+                        existingTelecomCall.setStatusHints(parcelableConference.getStatusHints());
+                        existingTelecomCall.setHandle(parcelableConference.getHandle(),
+                                parcelableConference.getHandlePresentation());
+                        existingTelecomCall.setDisconnectCause(
+                                parcelableConference.getDisconnectCause());
+                        existingTelecomCall.setRingbackRequested(
+                                parcelableConference.isRingbackRequested());
+                    }
+                }
+            } catch (Throwable t) {
+                Log.e(ConnectionServiceWrapper.this, t, "");
+                throw t;
+            } finally {
+                Binder.restoreCallingIdentity(token);
+                Log.endSession();
+            }
+        }
+
+        @Override
         public void onPostDialWait(String callId, String remaining,
                 Session.Info sessionInfo) throws RemoteException {
             Log.startSession(sessionInfo, "CSW.oPDW", mPackageAbbreviation);
@@ -866,7 +1044,11 @@ public class ConnectionServiceWrapper extends ServiceBinder implements
             long token = Binder.clearCallingIdentity();
             try {
                 synchronized (mLock) {
-                    Bundle.setDefusable(extras, true);
+                    if (mFlags.resolveHiddenDependenciesTwo()) {
+                        extras = TelecomBundleUtils.defuse(extras);
+                    } else {
+                        Bundle.setDefusable(extras, true);
+                    }
                     Call call = mCallIdMapper.getCall(callId);
                     if (call != null) {
                         call.putConnectionServiceExtras(extras);
@@ -910,7 +1092,8 @@ public class ConnectionServiceWrapper extends ServiceBinder implements
             long token = Binder.clearCallingIdentity();
             try {
                 synchronized (mLock) {
-                    logIncoming("setAddress %s %s %d", callId, address, presentation);
+                    logIncoming("setAddress %s %s %d", callId, Log.piiHandle(address),
+                            presentation);
                     Call call = mCallIdMapper.getCall(callId);
                     if (call != null) {
                         call.setHandle(address, presentation);
@@ -932,7 +1115,7 @@ public class ConnectionServiceWrapper extends ServiceBinder implements
             long token = Binder.clearCallingIdentity();
             try {
                 synchronized (mLock) {
-                    logIncoming("setCallerDisplayName %s %s %d", callId, callerDisplayName,
+                    logIncoming("setCallerDisplayName %s %s %d", callId, Log.pii(callerDisplayName),
                             presentation);
                     Call call = mCallIdMapper.getCall(callId);
                     if (call != null) {
@@ -1149,7 +1332,11 @@ public class ConnectionServiceWrapper extends ServiceBinder implements
             long token = Binder.clearCallingIdentity();
             try {
                 synchronized (mLock) {
-                    Bundle.setDefusable(extras, true);
+                    if (mFlags.resolveHiddenDependenciesTwo()) {
+                        extras = TelecomBundleUtils.defuse(extras);
+                    } else {
+                        Bundle.setDefusable(extras, true);
+                    }
                     Call call = mCallIdMapper.getCall(callId);
                     if (call != null) {
                         call.onConnectionEvent(event, extras);
@@ -1741,9 +1928,16 @@ public class ConnectionServiceWrapper extends ServiceBinder implements
 
                 GatewayInfo gatewayInfo = call.getGatewayInfo();
                 Bundle extras = call.getIntentExtras();
+                if (extras != null) {
+                    // always call extras.clone() to avoid causing crash if the extra is empty
+                    // immutable
+                    extras = (Bundle) extras.clone();
+                } else {
+                    extras = new Bundle();
+                }
+
                 if (gatewayInfo != null && gatewayInfo.getGatewayProviderPackageName() != null &&
                         gatewayInfo.getOriginalAddress() != null) {
-                    extras = (Bundle) extras.clone();
                     extras.putString(
                             TelecomManager.GATEWAY_PROVIDER_PACKAGE,
                             gatewayInfo.getGatewayProviderPackageName());
@@ -1754,10 +1948,6 @@ public class ConnectionServiceWrapper extends ServiceBinder implements
 
                 if (call.isIncoming() && mCallsManager.getEmergencyCallHelper()
                         .getLastEmergencyCallTimeMillis() > 0) {
-                  // Add the last emergency call time to the connection request for incoming calls
-                  if (extras == call.getIntentExtras()) {
-                    extras = (Bundle) extras.clone();
-                  }
                   extras.putLong(android.telecom.Call.EXTRA_LAST_EMERGENCY_CALLBACK_TIME_MILLIS,
                       mCallsManager.getEmergencyCallHelper().getLastEmergencyCallTimeMillis());
                 }
@@ -1887,20 +2077,22 @@ public class ConnectionServiceWrapper extends ServiceBinder implements
                             Log.piiHandle(call.getHandle()));
                     try {
                         logOutgoing("createConnectionFailed %s", callId);
-                        mServiceInterface.createConnectionFailed(
-                                call.getConnectionManagerPhoneAccount(),
-                                callId,
-                                new ConnectionRequest(
-                                        call.getTargetPhoneAccount(),
-                                        call.getHandle(),
-                                        call.getIntentExtras(),
-                                        call.getVideoState(),
-                                        callId,
-                                        false),
-                                call.isIncoming(),
-                                Log.getExternalSession(TELECOM_ABBREVIATION));
-                        call.setDisconnectCause(new DisconnectCause(DisconnectCause.CANCELED));
-                        call.disconnect();
+                        if (mServiceInterface != null) {
+                            mServiceInterface.createConnectionFailed(
+                                    call.getConnectionManagerPhoneAccount(),
+                                    callId,
+                                    new ConnectionRequest(
+                                            call.getTargetPhoneAccount(),
+                                            call.getHandle(),
+                                            call.getIntentExtras(),
+                                            call.getVideoState(),
+                                            callId,
+                                            false),
+                                    call.isIncoming(),
+                                    Log.getExternalSession(TELECOM_ABBREVIATION));
+                            call.setDisconnectCause(new DisconnectCause(DisconnectCause.CANCELED));
+                            call.disconnect();
+                        }
                     } catch (RemoteException e) {
                     }
                 }
@@ -1974,17 +2166,19 @@ public class ConnectionServiceWrapper extends ServiceBinder implements
                     Log.addEvent(call, LogUtils.Events.HANDOVER_FAILED,
                             Log.piiHandle(call.getHandle()));
                     try {
-                        mServiceInterface.handoverFailed(
-                                callId,
-                                new ConnectionRequest(
-                                        call.getTargetPhoneAccount(),
-                                        call.getHandle(),
-                                        call.getIntentExtras(),
-                                        call.getVideoState(),
-                                        callId,
-                                        false),
-                                reason,
-                                Log.getExternalSession(TELECOM_ABBREVIATION));
+                        if (mServiceInterface != null) {
+                            mServiceInterface.handoverFailed(
+                                    callId,
+                                    new ConnectionRequest(
+                                            call.getTargetPhoneAccount(),
+                                            call.getHandle(),
+                                            call.getIntentExtras(),
+                                            call.getVideoState(),
+                                            callId,
+                                            false),
+                                    reason,
+                                    Log.getExternalSession(TELECOM_ABBREVIATION));
+                        }
                     } catch (RemoteException e) {
                     }
                 }
@@ -2010,9 +2204,11 @@ public class ConnectionServiceWrapper extends ServiceBinder implements
                 // If still bound, tell the connection service create connection has failed.
                 if (callId != null && isServiceValid("handoverComplete")) {
                     try {
-                        mServiceInterface.handoverComplete(
-                                callId,
-                                Log.getExternalSession(TELECOM_ABBREVIATION));
+                        if (mServiceInterface != null) {
+                            mServiceInterface.handoverComplete(
+                                    callId,
+                                    Log.getExternalSession(TELECOM_ABBREVIATION));
+                        }
                     } catch (RemoteException e) {
                     }
                 }
@@ -2089,8 +2285,10 @@ public class ConnectionServiceWrapper extends ServiceBinder implements
         if (callId != null && isServiceValid("onCallAudioStateChanged")) {
             try {
                 logOutgoing("onCallAudioStateChanged %s %s", callId, audioState);
-                mServiceInterface.onCallAudioStateChanged(callId, audioState,
-                        Log.getExternalSession(TELECOM_ABBREVIATION));
+                if (mServiceInterface != null) {
+                    mServiceInterface.onCallAudioStateChanged(callId, audioState,
+                            Log.getExternalSession(TELECOM_ABBREVIATION));
+                }
             } catch (RemoteException e) {
             }
         }
@@ -2566,8 +2764,10 @@ public class ConnectionServiceWrapper extends ServiceBinder implements
             public void onSuccess() {
                 if (!isServiceValid("connectionServiceFocusLost")) return;
                 try {
-                    mServiceInterface.connectionServiceFocusLost(
-                            Log.getExternalSession(TELECOM_ABBREVIATION));
+                    if (mServiceInterface != null) {
+                        mServiceInterface.connectionServiceFocusLost(
+                                Log.getExternalSession(TELECOM_ABBREVIATION));
+                    }
                 } catch (RemoteException ignored) {
                     Log.d(this, "failed to inform the focus lost event");
                 }
@@ -2586,8 +2786,10 @@ public class ConnectionServiceWrapper extends ServiceBinder implements
             public void onSuccess() {
                 if (!isServiceValid("connectionServiceFocusGained")) return;
                 try {
-                    mServiceInterface.connectionServiceFocusGained(
-                            Log.getExternalSession(TELECOM_ABBREVIATION));
+                    if (mServiceInterface != null) {
+                        mServiceInterface.connectionServiceFocusGained(
+                                Log.getExternalSession(TELECOM_ABBREVIATION));
+                    }
                 } catch (RemoteException ignored) {
                     Log.d(this, "failed to inform the focus gained event");
                 }

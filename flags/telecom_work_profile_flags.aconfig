@@ -1,10 +1,13 @@
 package: "com.android.server.telecom.flags"
 container: "system"
 
-# OWNER=pmadapurmath TARGET=24Q3
+# OWNER=tgunn TARGET=25Q4
 flag {
-  name: "associated_user_refactor_for_work_profile"
+  name: "dont_notify_missed_calls_when_no_dialer"
   namespace: "telecom"
-  description: "Redefines the associated user for calls in the context of work profile support (U+)"
-  bug: "315035693"
+  description: "In some cases, we get a user switched or boot complete indication on a work profile; if no dialer app is installed don't notify missed calls there."
+  bug: "431576795"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
 }

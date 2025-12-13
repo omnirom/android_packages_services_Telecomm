@@ -19,6 +19,8 @@
     <string name="telecommAppLabel" product="default" msgid="1825598513414129827">"Телефонски повици"</string>
     <string name="userCallActivityLabel" product="default" msgid="3605391260292846248">"Телефон"</string>
     <string name="unknown" msgid="6993977514360123431">"Непознато"</string>
+    <string name="private_num" msgid="7971471360030811411">"Приватен број"</string>
+    <string name="payphone" msgid="7652075262156192657">"Телефонска говорница"</string>
     <string name="notification_missedCallTitle" msgid="5060387047205532974">"Пропуштен повик"</string>
     <string name="notification_missedWorkCallTitle" msgid="6965463282259034953">"Пропуштен работен повик"</string>
     <string name="notification_missedCallsTitle" msgid="3910479625507893809">"Пропуштени повици"</string>
@@ -43,7 +45,7 @@
     <string name="respond_via_sms_setting_title_2" msgid="4914853536609553457">"Измени брзи одговори"</string>
     <string name="respond_via_sms_setting_summary" msgid="8054571501085436868"></string>
     <string name="respond_via_sms_edittext_dialog_title" msgid="6579353156073272157">"Брз одговор"</string>
-    <string name="respond_via_sms_confirmation_format" msgid="2932395476561267842">"Порака е испратена на <xliff:g id="PHONE_NUMBER">%s</xliff:g>."</string>
+    <string name="respond_via_sms_confirmation_format" msgid="2619774063232350285">"Се испраќа порака до <xliff:g id="PHONE_NUMBER">%s</xliff:g>."</string>
     <string name="respond_via_sms_failure_format" msgid="5198680980054596391">"Пораката не може да се испрати на <xliff:g id="PHONE_NUMBER">%s</xliff:g>."</string>
     <string name="enable_account_preference_title" msgid="6949224486748457976">"Сметки за повици"</string>
     <string name="outgoing_call_not_allowed_user_restriction" msgid="3424338207838851646">"Дозволени се само итни повици."</string>
@@ -138,7 +140,11 @@
     <string name="callFailed_too_many_calls_include_merge" msgid="2234495082825519920">"Не може да се воспостави повик бидејќи веќе се во тек два повика. Исклучете го едниот од повиците или спојте ги во конференциски повик пред да воспоставите нов повик."</string>
     <string name="callFailed_too_many_calls_exclude_merge" msgid="8616011288480453495">"Не може да се воспостави повик бидејќи веќе има два повика во тек. Прекинете еден од повиците пред да воспоставите нов повик."</string>
     <string name="callFailed_unholdable_call" msgid="7580834131274566524">"Не може да се воспостави повик бидејќи има повик што не може да се стави на чекање. Исклучете го повикот пред да воспоставите нов повик."</string>
+    <string name="callSwapFailed_unholdable_call" msgid="4779540296319850415">"Активниот повик не може да се замени бидејќи не поддржува ставање на чекање. Прекинете го повикот за да го активирате повикот на чекање."</string>
     <string name="callFailed_already_ringing" msgid="7931232733958098270">"Не може да се воспостави повик затоа што има неодговорен дојдовен повик. Одговорете или одбијте го дојдовниот повик пред воспоставувањето на новиот повик."</string>
     <string name="callFailed_reject_mmi" msgid="5219280796733595167">"MMI-кодов не е достапен за повици на повеќе сметки."</string>
+    <string name="call_hangup_fail_during_merge" msgid="4216015878956379200">"Повикот не може да се прекине додека се врши спојување."</string>
     <string name="emergencyCall_reject_mmi" msgid="5056319534549705785">"MMI-кодовите не може да се бираат за време на итен повик."</string>
+    <string name="noApplications" msgid="1703149220378476198">"Нема апликации што може да го извршат дејствово."</string>
+    <string name="android_system_label" msgid="2730611410547215779">"Систем Android"</string>
 </resources>

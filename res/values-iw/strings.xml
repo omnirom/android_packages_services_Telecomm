@@ -19,6 +19,8 @@
     <string name="telecommAppLabel" product="default" msgid="1825598513414129827">"שיחות טלפון"</string>
     <string name="userCallActivityLabel" product="default" msgid="3605391260292846248">"טלפון"</string>
     <string name="unknown" msgid="6993977514360123431">"לא ידוע"</string>
+    <string name="private_num" msgid="7971471360030811411">"מספר פרטי"</string>
+    <string name="payphone" msgid="7652075262156192657">"טלפון ציבורי"</string>
     <string name="notification_missedCallTitle" msgid="5060387047205532974">"שיחה שלא נענתה"</string>
     <string name="notification_missedWorkCallTitle" msgid="6965463282259034953">"שיחה עסקית שלא נענתה"</string>
     <string name="notification_missedCallsTitle" msgid="3910479625507893809">"שיחות שלא נענו"</string>
@@ -43,7 +45,7 @@
     <string name="respond_via_sms_setting_title_2" msgid="4914853536609553457">"עריכת תגובות מהירות"</string>
     <string name="respond_via_sms_setting_summary" msgid="8054571501085436868"></string>
     <string name="respond_via_sms_edittext_dialog_title" msgid="6579353156073272157">"תגובה מהירה"</string>
-    <string name="respond_via_sms_confirmation_format" msgid="2932395476561267842">"הודעה נשלחה אל <xliff:g id="PHONE_NUMBER">%s</xliff:g>."</string>
+    <string name="respond_via_sms_confirmation_format" msgid="2619774063232350285">"ההודעה נשלחת אל <xliff:g id="PHONE_NUMBER">%s</xliff:g>."</string>
     <string name="respond_via_sms_failure_format" msgid="5198680980054596391">"לא ניתן היה לשלוח את ההודעה ל-<xliff:g id="PHONE_NUMBER">%s</xliff:g>."</string>
     <string name="enable_account_preference_title" msgid="6949224486748457976">"חשבונות לביצוע שיחות"</string>
     <string name="outgoing_call_not_allowed_user_restriction" msgid="3424338207838851646">"ניתן לבצע רק שיחות חירום."</string>
@@ -138,7 +140,11 @@
     <string name="callFailed_too_many_calls_include_merge" msgid="2234495082825519920">"אי אפשר להתקשר כי כבר יש שתי שיחות פעילות. כדי להתחיל שיחה חדשה, צריך לנתק את אחת מהשיחות או למזג אותן וליצור שיחת ועידה."</string>
     <string name="callFailed_too_many_calls_exclude_merge" msgid="8616011288480453495">"אי אפשר להתקשר כי כבר יש שתי שיחות פעילות. כדי להתחיל שיחה חדשה, צריך לנתק את אחת מהשיחות."</string>
     <string name="callFailed_unholdable_call" msgid="7580834131274566524">"אי אפשר להתקשר כי כבר יש שיחה פעילה ואי אפשר להעביר אותה להמתנה. צריך לנתק את השיחה ורק אז לנסות להתקשר למספר אחר."</string>
+    <string name="callSwapFailed_unholdable_call" msgid="4779540296319850415">"אי אפשר להחליף בין השיחות כי השיחה החדשה לא תומכת במצב המתנה. כדי לחזור לשיחה הקודמת שבהמתנה, צריך לנתק את השיחה החדשה שהתחלת."</string>
     <string name="callFailed_already_ringing" msgid="7931232733958098270">"אי אפשר להתקשר כי יש שיחה נכנסת אחרת. צריך לענות לשיחה או לדחות אותה ורק אז לנסות להתקשר למספר אחר."</string>
     <string name="callFailed_reject_mmi" msgid="5219280796733595167">"‏אי אפשר להשתמש בקוד ה-MMI הזה לשיחות במספר חשבונות."</string>
+    <string name="call_hangup_fail_during_merge" msgid="4216015878956379200">"אי אפשר לנתק את השיחה במהלך מיזוג."</string>
     <string name="emergencyCall_reject_mmi" msgid="5056319534549705785">"‏אי אפשר להתקשר לקודי MMI בזמן שיחת חירום."</string>
+    <string name="noApplications" msgid="1703149220378476198">"אין אפליקציות שיכולות לבצע את הפעולה הזו."</string>
+    <string name="android_system_label" msgid="2730611410547215779">"‏מערכת Android"</string>
 </resources>

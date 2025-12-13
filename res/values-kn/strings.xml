@@ -19,6 +19,8 @@
     <string name="telecommAppLabel" product="default" msgid="1825598513414129827">"ಫೋನ್ ಕರೆಗಳು"</string>
     <string name="userCallActivityLabel" product="default" msgid="3605391260292846248">"ಫೋನ್"</string>
     <string name="unknown" msgid="6993977514360123431">"ಅಪರಿಚಿತ"</string>
+    <string name="private_num" msgid="7971471360030811411">"ಖಾಸಗಿ ಸಂಖ್ಯೆ"</string>
+    <string name="payphone" msgid="7652075262156192657">"ಪೇಫೋನ್"</string>
     <string name="notification_missedCallTitle" msgid="5060387047205532974">"ಮಿಸ್ಡ್‌ ಕಾಲ್‌"</string>
     <string name="notification_missedWorkCallTitle" msgid="6965463282259034953">"ಮಿಸ್ಡ್‌ ಕೆಲಸದ ಕರೆ"</string>
     <string name="notification_missedCallsTitle" msgid="3910479625507893809">"ಮಿಸ್ಡ್‌ ಕಾಲ್‍‍ಗಳು"</string>
@@ -43,7 +45,7 @@
     <string name="respond_via_sms_setting_title_2" msgid="4914853536609553457">"ತ್ವರಿತ ಪ್ರತಿಕ್ರಿಯೆ ಎಡಿಟ್ ಮಾಡಿ"</string>
     <string name="respond_via_sms_setting_summary" msgid="8054571501085436868"></string>
     <string name="respond_via_sms_edittext_dialog_title" msgid="6579353156073272157">"ತ್ವರಿತ ಪ್ರತಿಕ್ರಿಯೆ"</string>
-    <string name="respond_via_sms_confirmation_format" msgid="2932395476561267842">"<xliff:g id="PHONE_NUMBER">%s</xliff:g> ಗೆ ಸಂದೇಶ ಕಳುಹಿಸಲಾಗಿದೆ."</string>
+    <string name="respond_via_sms_confirmation_format" msgid="2619774063232350285">"<xliff:g id="PHONE_NUMBER">%s</xliff:g> ಗೆ ಸಂದೇಶವನ್ನು ಕಳುಹಿಸಲಾಗುತ್ತಿದೆ."</string>
     <string name="respond_via_sms_failure_format" msgid="5198680980054596391">"<xliff:g id="PHONE_NUMBER">%s</xliff:g> ಫೋನ್ ಸಂಖ್ಯೆಗೆ ಸಂದೇಶವನ್ನು ಕಳುಹಿಸುವಲ್ಲಿ ವಿಫಲವಾಗಿದೆ."</string>
     <string name="enable_account_preference_title" msgid="6949224486748457976">"ಕರೆ ಮಾಡುವ ಖಾತೆಗಳು"</string>
     <string name="outgoing_call_not_allowed_user_restriction" msgid="3424338207838851646">"ತುರ್ತು ಕರೆಗಳನ್ನು ಮಾಡಲು ಮಾತ್ರ ಅವಕಾಶವಿದೆ."</string>
@@ -138,7 +140,11 @@
     <string name="callFailed_too_many_calls_include_merge" msgid="2234495082825519920">"ಈಗಾಗಲೇ ಎರಡು ಕರೆಗಳು ಪ್ರಗತಿಯಲ್ಲಿರುವ ಕಾರಣ ಕರೆ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ. ಒಂದು ಕರೆಯನ್ನು ಡಿಸ್‌ಕನೆಕ್ಟ್ ಮಾಡಿ ಅಥವಾ ಹೊಸ ಕರೆಯನ್ನು ಮಾಡುವ ಮೊದಲು ಎರಡು ಕರೆಗಳನ್ನು ಒಂದೇ ಕಾನ್ಫರೆನ್ಸ್‌ನಲ್ಲಿ ವಿಲೀನಗೊಳಿಸಿ."</string>
     <string name="callFailed_too_many_calls_exclude_merge" msgid="8616011288480453495">"ಈಗಾಗಲೇ ಎರಡು ಕರೆಗಳು ಪ್ರಗತಿಯಲ್ಲಿರುವ ಕಾರಣ ಕರೆ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ. ಹೊಸ ಕರೆಯನ್ನು ಮಾಡುವ ಮೊದಲು ಒಂದು ಕರೆಯನ್ನು ಡಿಸ್‌ಕನೆಕ್ಟ್ ಮಾಡಿ."</string>
     <string name="callFailed_unholdable_call" msgid="7580834131274566524">"ಈಗಾಗಲೇ ಪ್ರಗತಿಯಲ್ಲಿರುವ ಕರೆಯನ್ನು ಹೋಲ್ಡ್ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲದ ಕಾರಣ, ಕರೆ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ. ಹೊಸ ಕರೆಯನ್ನು ಮಾಡುವ ಮೊದಲು ಕರೆಯನ್ನು ಡಿಸ್‌ಕನೆಕ್ಟ್ ಮಾಡಿ."</string>
+    <string name="callSwapFailed_unholdable_call" msgid="4779540296319850415">"ಸಕ್ರಿಯ ಕರೆಯನ್ನು ಬದಲಾಯಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ ಏಕೆಂದರೆ ಇದು ಹೋಲ್ಡ್ ಮಾಡುವುದನ್ನು ಬೆಂಬಲಿಸುವುದಿಲ್ಲ. ಹೋಲ್ಡ್ ಮಾಡಿದ ಕರೆಯನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಲು ಕರೆಯನ್ನು ಡಿಸ್‌ಕನೆಕ್ಟ್ ಮಾಡಿ."</string>
     <string name="callFailed_already_ringing" msgid="7931232733958098270">"ಉತ್ತರಿಸದ ಒಳಬರುವ ಕರೆ ಬರುತ್ತಿರುವುದರಿಂದ ಕರೆ ಮಾಡಲು ಸಾಧ್ಯವಾಗುವುದಿಲ್ಲ. ಹೊಸ ಕರೆಯನ್ನು ಮಾಡುವ ಮೊದಲು ಕರೆಗೆ ಉತ್ತರ ನೀಡಿ ಅಥವಾ ತಿರಸ್ಕರಿಸಿ."</string>
     <string name="callFailed_reject_mmi" msgid="5219280796733595167">"ಬಹು ಖಾತೆಗಳಾದ್ಯಂತ ಕರೆಗಳಿಗೆ ಈ MMI ಕೋಡ್ ಲಭ್ಯವಿರುವುದಿಲ್ಲ."</string>
+    <string name="call_hangup_fail_during_merge" msgid="4216015878956379200">"ವಿಲೀನಗೊಳಿಸುವ ಸಮಯದಲ್ಲಿ ಕರೆಯ ಸಂಪರ್ಕವನ್ನು ಕಡಿತಗೊಳಿಸಲಾಗುವುದಿಲ್ಲ."</string>
     <string name="emergencyCall_reject_mmi" msgid="5056319534549705785">"ತುರ್ತು ಕರೆಯ ಸಮಯದಲ್ಲಿ MMI ಕೋಡ್‌ಗಳನ್ನು ಡಯಲ್ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ."</string>
+    <string name="noApplications" msgid="1703149220378476198">"ಯಾವುದೇ ಆ್ಯಪ್‌ಗಳು ಈ ಕ್ರಿಯೆಗಾಗಿ ಬದ್ಧತೆ ತೋರಿಸುವುದಿಲ್ಲ."</string>
+    <string name="android_system_label" msgid="2730611410547215779">"Android ಸಿಸ್ಟಂ"</string>
 </resources>

@@ -72,12 +72,14 @@ import android.os.OutcomeReceiver;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.UserManager;
+import android.permission.PermissionManager;
 import android.telecom.CallAttributes;
 import android.telecom.PhoneAccount;
 import android.telecom.PhoneAccountHandle;
 import android.telecom.TelecomManager;
 import android.telecom.VideoProfile;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 
 import androidx.test.filters.SmallTest;
 
@@ -116,6 +118,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -210,6 +213,7 @@ public class TelecomServiceImplTest extends TelecomTestCase {
     @Mock private TelecomMetricsController mMockTelecomMetricsController;
     @Mock private OutgoingCallTransaction mOutgoingCallTransaction;
     @Mock private IncomingCallTransaction mIncomingCallTransaction;
+    @Mock private PermissionManager mPermissionManager;
 
     private final TelecomSystem.SyncRoot mLock = new TelecomSystem.SyncRoot() { };
 
@@ -277,7 +281,7 @@ public class TelecomServiceImplTest extends TelecomTestCase {
         mAppOpsManager = (AppOpsManager) mContext.getSystemService(Context.APP_OPS_SERVICE);
         mUserManager = (UserManager) mContext.getSystemService(Context.USER_SERVICE);
 
-        when(mDefaultDialerCache.getDefaultDialerApplication(anyInt()))
+        when(mDefaultDialerCache.getDefaultDialerApplication(any()))
                 .thenReturn(DEFAULT_DIALER_PACKAGE);
         when(mDefaultDialerCache.isDefaultOrSystemDialer(eq(DEFAULT_DIALER_PACKAGE), anyInt()))
                 .thenReturn(true);
@@ -286,7 +290,6 @@ public class TelecomServiceImplTest extends TelecomTestCase {
         when(mPackageManager.getPackageUid(anyString(), eq(0))).thenReturn(Binder.getCallingUid());
         when(mFeatureFlags.earlyBindingToIncallService()).thenReturn(true);
         when(mTelephonyFeatureFlags.workProfileApiSplit()).thenReturn(false);
-        when(mFeatureFlags.enableCallSequencing()).thenReturn(false);
     }
 
     @Override
@@ -1887,13 +1890,16 @@ public class TelecomServiceImplTest extends TelecomTestCase {
     @SmallTest
     @Test
     public void testSetDefaultDialer() throws Exception {
+        when(mFeatureFlags.resolveHiddenDependenciesTwo()).thenReturn(true);
+
         String packageName = "sample.package";
-        int currentUser = ActivityManager.getCurrentUser();
+        int currentUserId = ActivityManager.getCurrentUser();
+        UserHandle currentUser = new UserHandle(currentUserId);
 
         String[] defaultDialer = new String[1];
         doAnswer(invocation -> {
             defaultDialer[0] = packageName;
-            mDefaultDialerObserver.accept(currentUser);
+            mDefaultDialerObserver.accept(currentUserId);
             return true;
         }).when(mDefaultDialerCache).setDefaultDialer(eq(packageName), eq(currentUser));
         doAnswer(invocation -> defaultDialer[0]).when(mDefaultDialerCache)
@@ -1935,7 +1941,7 @@ public class TelecomServiceImplTest extends TelecomTestCase {
             exceptionThrown = true;
         }
         assertTrue(exceptionThrown);
-        verify(mDefaultDialerCache, never()).setDefaultDialer(anyString(), anyInt());
+        verify(mDefaultDialerCache, never()).setDefaultDialer(anyString(), any());
         verify(mContext, never()).sendBroadcastAsUser(any(Intent.class), any(UserHandle.class));
     }
 
@@ -2067,6 +2073,20 @@ public class TelecomServiceImplTest extends TelecomTestCase {
 
     @SmallTest
     @Test
+    public void testGetLine1NumberWithWrongSubId() throws Exception {
+        setupGetLine1NumberTest();
+        when(mFakePhoneAccountRegistrar.isSubscriptionIdActive(anyInt()))
+                .thenReturn(false);
+        String line1Number = null;
+        setTargetSdkVersion(Build.VERSION_CODES.Q);
+        grantPermissionAndAppOp(READ_PHONE_STATE, AppOpsManager.OPSTR_READ_PHONE_STATE);
+
+        assertEquals(line1Number,
+                mTSIBinder.getLine1Number(TEL_PA_HANDLE_CURRENT, DEFAULT_DIALER_PACKAGE, null));
+    }
+
+    @SmallTest
+    @Test
     public void testGetLine1NumberWithReadPhoneStateTargetR() throws Exception {
         setupGetLine1NumberTest();
         grantPermissionAndAppOp(READ_PHONE_STATE, AppOpsManager.OPSTR_READ_PHONE_STATE);
@@ -2161,6 +2181,8 @@ public class TelecomServiceImplTest extends TelecomTestCase {
                 anyString());
         doReturn(false).when(mDefaultDialerCache).isDefaultOrSystemDialer(
                 eq(DEFAULT_DIALER_PACKAGE), anyInt());
+        when(mFakePhoneAccountRegistrar.isSubscriptionIdActive(anyInt()))
+                .thenReturn(true);
         return line1Number;
     }
 
@@ -2183,10 +2205,12 @@ public class TelecomServiceImplTest extends TelecomTestCase {
     @SmallTest
     @Test
     public void testGetDefaultDialerPackageForUser() throws Exception {
+        when(mFeatureFlags.resolveHiddenDependenciesTwo()).thenReturn(true);
+
         final int userId = 1;
         final String packageName = "some.package";
 
-        when(mDefaultDialerCache.getDefaultDialerApplication(userId))
+        when(mDefaultDialerCache.getDefaultDialerApplication(new UserHandle(userId)))
                 .thenReturn(packageName);
 
         assertEquals(packageName, mTSIBinder.getDefaultDialerPackageForUser(userId));

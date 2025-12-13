@@ -17,6 +17,8 @@
 package com.android.server.telecom.tests;
 
 
+import static android.Manifest.permission.PROCESS_OUTGOING_CALLS;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -27,6 +29,7 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -34,7 +37,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.timeout;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -69,11 +71,13 @@ import android.telephony.TelephonyManager;
 import android.telephony.TelephonyRegistryManager;
 
 import com.android.internal.telecom.IInCallAdapter;
+import com.android.server.telecom.AnomalyReporterAdapter;
 import com.android.server.telecom.AsyncRingtonePlayer;
-import com.android.server.telecom.CallAudioCommunicationDeviceTracker;
+import com.android.server.telecom.AudioRoute;
 import com.android.server.telecom.CallAudioManager;
 import com.android.server.telecom.CallAudioModeStateMachine;
-import com.android.server.telecom.CallAudioRouteStateMachine;
+import com.android.server.telecom.CallAudioRouteAdapter;
+import com.android.server.telecom.CallAudioRouteController;
 import com.android.server.telecom.CallerInfoLookupHelper;
 import com.android.server.telecom.CallsManager;
 import com.android.server.telecom.CallsManagerListenerBase;
@@ -102,6 +106,7 @@ import com.android.server.telecom.callfiltering.BlockedNumbersAdapter;
 import com.android.server.telecom.callsequencing.voip.VoipCallMonitor;
 import com.android.server.telecom.components.UserCallIntentProcessor;
 import com.android.server.telecom.flags.FeatureFlags;
+import com.android.server.telecom.metrics.TelecomMetricsController;
 import com.android.server.telecom.ui.IncomingCallNotifier;
 
 import com.google.common.base.Predicate;
@@ -116,6 +121,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
@@ -219,11 +225,10 @@ public class TelecomSystemTest extends TelecomTestCase{
     @Mock
     BlockedNumbersAdapter mBlockedNumbersAdapter;
     @Mock
-    CallAudioCommunicationDeviceTracker mCommunicationDeviceTracker;
-    @Mock
     FeatureFlags mFeatureFlags;
     @Mock
     com.android.internal.telephony.flags.FeatureFlags mTelephonyFlags;
+    @Mock Ringer.VibratorAdapter mVibratorAdapter;
 
     private static final String SYSTEM_UI_PACKAGE = "com.android.systemui";
     final ComponentName mInCallServiceComponentNameX =
@@ -424,7 +429,23 @@ public class TelecomSystemTest extends TelecomTestCase{
             if (vcm != null) {
                 vcm.unregisterNotificationListener();
             }
+            if (mTelecomSystem.getCallsManager().getCallAudioManager() != null
+                    && mTelecomSystem.getCallsManager().getCallAudioManager()
+                    .getCallAudioRouteAdapter() != null) {
+                try {
+                    CallAudioRouteAdapter audioRouteAdapter =
+                            mTelecomSystem.getCallsManager().getCallAudioManager()
+                                    .getCallAudioRouteAdapter();
+                    Handler handler = audioRouteAdapter.getAdapterHandler();
+                    waitForHandlerAction(handler, TEST_TIMEOUT);
+                    handler.getLooper().quit();
+                    handler.getLooper().getThread().join();
+                } catch (InterruptedException e) {
+                    // ignore
+                }
+            }
         }
+
         waitForHandlerAction(new Handler(Looper.getMainLooper()), TEST_TIMEOUT);
         waitForHandlerAction(mHandlerThread.getThreadHandler(), TEST_TIMEOUT);
         // Bring down the threads that are active.
@@ -513,7 +534,7 @@ public class TelecomSystemTest extends TelecomTestCase{
                 };
 
         mTimeoutsAdapter = mock(Timeouts.Adapter.class);
-        when(mTimeoutsAdapter.getCallScreeningTimeoutMillis(any(ContentResolver.class)))
+        when(mTimeoutsAdapter.getCallScreeningTimeoutMillis(any(Context.class), any(FeatureFlags.class)))
                 .thenReturn(TEST_TIMEOUT / 5L);
         mIncomingCallNotifier = mock(IncomingCallNotifier.class);
         mClockProxy = mock(ClockProxy.class);
@@ -523,8 +544,6 @@ public class TelecomSystemTest extends TelecomTestCase{
         when(mRoleManagerAdapter.getDefaultCallScreeningApp(any(UserHandle.class)))
                 .thenReturn(null);
         when(mRoleManagerAdapter.getBTInCallService()).thenReturn(new String[] {"bt_pkg"});
-        when(mFeatureFlags.callAudioCommunicationDeviceRefactor()).thenReturn(true);
-        when(mFeatureFlags.useRefactoredAudioRouteSwitching()).thenReturn(false);
         mTelecomSystem = new TelecomSystem(
                 mComponentContextFixture.getTestDouble(),
                 (context, phoneAccountRegistrar, defaultDialerCache, mDeviceIdleControllerAdapter,
@@ -541,42 +560,37 @@ public class TelecomSystemTest extends TelecomTestCase{
                 new PhoneNumberUtilsAdapterImpl(),
                 mIncomingCallNotifier,
                 (streamType, volume) -> mToneGenerator,
-                new CallAudioRouteStateMachine.Factory() {
-                    @Override
-                    public CallAudioRouteStateMachine create(
+                new CallAudioRouteController.Factory() {
+                    public CallAudioRouteController create(
                             Context context,
                             CallsManager callsManager,
                             BluetoothRouteManager bluetoothManager,
                             WiredHeadsetManager wiredHeadsetManager,
                             StatusBarNotifier statusBarNotifier,
                             CallAudioManager.AudioServiceFactory audioServiceFactory,
-                            int earpieceControl,
-                            Executor asyncTaskExecutor,
-                            CallAudioCommunicationDeviceTracker communicationDeviceTracker,
-                            FeatureFlags featureFlags) {
-                        return new CallAudioRouteStateMachine(context,
+                            FeatureFlags featureFlags,
+                            TelecomMetricsController metricsController,
+                            AsyncRingtonePlayer ringtonePlayer,
+                            AnomalyReporterAdapter anomalyReporter) {
+                        return new CallAudioRouteController(context,
                                 callsManager,
-                                bluetoothManager,
-                                wiredHeadsetManager,
-                                statusBarNotifier,
                                 audioServiceFactory,
-                                // Force enable an earpiece for the end-to-end tests
-                                CallAudioRouteStateMachine.EARPIECE_FORCE_ENABLED,
-                                mHandlerThread.getLooper(),
-                                Runnable::run /* async tasks as now sync for testing! */,
-                                communicationDeviceTracker,
-                                featureFlags);
+                                new AudioRoute.Factory(),
+                                wiredHeadsetManager,
+                                bluetoothManager,
+                                statusBarNotifier,
+                                featureFlags,
+                                metricsController,
+                                ringtonePlayer,
+                                anomalyReporter);
                     }
                 },
                 new CallAudioModeStateMachine.Factory() {
                     @Override
                     public CallAudioModeStateMachine create(SystemStateHelper systemStateHelper,
-                            AudioManager am, FeatureFlags featureFlags,
-                            CallAudioCommunicationDeviceTracker callAudioCommunicationDeviceTracker
-                    ) {
+                            AudioManager am, FeatureFlags featureFlags) {
                         return new CallAudioModeStateMachine(systemStateHelper, am,
-                                mHandlerThread.getLooper(), featureFlags,
-                                callAudioCommunicationDeviceTracker);
+                                mHandlerThread.getLooper(), featureFlags);
                     }
                 },
                 mClockProxy,
@@ -594,7 +608,8 @@ public class TelecomSystemTest extends TelecomTestCase{
                 mBlockedNumbersAdapter,
                 mFeatureFlags,
                 mTelephonyFlags,
-                mHandlerThread.getLooper());
+                mHandlerThread.getLooper(),
+                mVibratorAdapter);
 
         mComponentContextFixture.setTelecomManager(new TelecomManager(
                 mComponentContextFixture.getTestDouble(),
@@ -850,33 +865,23 @@ public class TelecomSystemTest extends TelecomTestCase{
     }
 
     protected void verifyAndProcessOutgoingCallBroadcast(PhoneAccountHandle phoneAccountHandle) {
-        ArgumentCaptor<Intent> newOutgoingCallIntent =
-                ArgumentCaptor.forClass(Intent.class);
-        ArgumentCaptor<BroadcastReceiver> newOutgoingCallReceiver =
-                ArgumentCaptor.forClass(BroadcastReceiver.class);
-
         if (phoneAccountHandle != mPhoneAccountSelfManaged.getAccountHandle()) {
-            verify(mComponentContextFixture.getTestDouble().getApplicationContext(),
-                    times(mNumOutgoingCallsMade))
-                    .sendOrderedBroadcastAsUser(
-                            newOutgoingCallIntent.capture(),
-                            any(UserHandle.class),
-                            anyString(),
-                            anyInt(),
-                            any(Bundle.class),
-                            newOutgoingCallReceiver.capture(),
-                            nullable(Handler.class),
-                            anyInt(),
-                            anyString(),
-                            nullable(Bundle.class));
-            // Pass on the new outgoing call Intent
-            // Set a dummy PendingResult so the BroadcastReceiver agrees to accept onReceive()
-            newOutgoingCallReceiver.getValue().setPendingResult(
-                    new BroadcastReceiver.PendingResult(0, "", null, 0, true, false, null, 0, 0));
-            newOutgoingCallReceiver.getValue().setResultData(
-                    newOutgoingCallIntent.getValue().getStringExtra(Intent.EXTRA_PHONE_NUMBER));
-            newOutgoingCallReceiver.getValue().onReceive(mComponentContextFixture.getTestDouble(),
-                    newOutgoingCallIntent.getValue());
+            // Okay, this is gross.  Based on the telecomResolveHiddenDependencies flag, we may have
+            // called either of these prototypes..
+            if (mFeatureFlags.telecomResolveHiddenDependencies()) {
+                verify(mComponentContextFixture.getTestDouble().getApplicationContext(), atLeast(0))
+                        .sendBroadcastAsUser(
+                                any(Intent.class),
+                                any(UserHandle.class),
+                                eq(PROCESS_OUTGOING_CALLS));
+            } else {
+                verify(mComponentContextFixture.getTestDouble().getApplicationContext(), atLeast(0))
+                        .sendBroadcastAsUser(
+                                any(Intent.class),
+                                any(UserHandle.class),
+                                eq(PROCESS_OUTGOING_CALLS),
+                                anyInt());
+            }
         }
 
     }

@@ -19,6 +19,8 @@
     <string name="telecommAppLabel" product="default" msgid="1825598513414129827">"Telefonatat"</string>
     <string name="userCallActivityLabel" product="default" msgid="3605391260292846248">"Telefoni"</string>
     <string name="unknown" msgid="6993977514360123431">"I panjohur"</string>
+    <string name="private_num" msgid="7971471360030811411">"Numër privat"</string>
+    <string name="payphone" msgid="7652075262156192657">"Telefon me pagesë"</string>
     <string name="notification_missedCallTitle" msgid="5060387047205532974">"Telefonatë e humbur"</string>
     <string name="notification_missedWorkCallTitle" msgid="6965463282259034953">"Telefonatë pune e humbur"</string>
     <string name="notification_missedCallsTitle" msgid="3910479625507893809">"Telefonata të humbura"</string>
@@ -43,7 +45,7 @@
     <string name="respond_via_sms_setting_title_2" msgid="4914853536609553457">"Redakto përgjigjet e shpejta"</string>
     <string name="respond_via_sms_setting_summary" msgid="8054571501085436868"></string>
     <string name="respond_via_sms_edittext_dialog_title" msgid="6579353156073272157">"Përgjigje e shpejtë"</string>
-    <string name="respond_via_sms_confirmation_format" msgid="2932395476561267842">"Mesazhi u dërgua te <xliff:g id="PHONE_NUMBER">%s</xliff:g>."</string>
+    <string name="respond_via_sms_confirmation_format" msgid="2619774063232350285">"Mesazhi po dërgohet te <xliff:g id="PHONE_NUMBER">%s</xliff:g>."</string>
     <string name="respond_via_sms_failure_format" msgid="5198680980054596391">"Dërgimi i mesazhit te <xliff:g id="PHONE_NUMBER">%s</xliff:g> dështoi."</string>
     <string name="enable_account_preference_title" msgid="6949224486748457976">"Llogaritë e telefonatave"</string>
     <string name="outgoing_call_not_allowed_user_restriction" msgid="3424338207838851646">"Lejohen vetëm telefonatat e urgjencës."</string>
@@ -138,7 +140,11 @@
     <string name="callFailed_too_many_calls_include_merge" msgid="2234495082825519920">"Nuk mund të kryhet një telefonatë sepse janë tashmë dy telefonata në vazhdim. Shkëput një nga telefonatat ose shkriji ato në një konferencë para se të kryesh një telefonatë të re."</string>
     <string name="callFailed_too_many_calls_exclude_merge" msgid="8616011288480453495">"Nuk mund të kryhet një telefonatë sepse janë tashmë dy telefonata në vazhdim. Shkëput një nga telefonatat para se të kryesh një telefonatë të re."</string>
     <string name="callFailed_unholdable_call" msgid="7580834131274566524">"Nuk mund të kryhet një telefonatë pasi është në telefonatë që nuk mund të vendoset në pritje. Shkëput telefonatën para se të kryesh një telefonatë të re."</string>
+    <string name="callSwapFailed_unholdable_call" msgid="4779540296319850415">"Telefonata aktive nuk mund të ndërrohet sepse nuk mbështetet vënia në pritje. Shkëput telefonatën për ta bërë aktive telefonatën në pritje."</string>
     <string name="callFailed_already_ringing" msgid="7931232733958098270">"Nuk mund të kryhet një telefonatë sepse është një telefonatë hyrëse që nuk ka marrë përgjigje. Përgjigju ose refuzoje telefonatën hyrëse para se të kryesh një telefonatë të re."</string>
     <string name="callFailed_reject_mmi" msgid="5219280796733595167">"Ky kod MMI nuk ofrohet për telefonatat në disa llogari."</string>
+    <string name="call_hangup_fail_during_merge" msgid="4216015878956379200">"Telefonata nuk mund të shkëputet gjatë një shkrirjeje."</string>
     <string name="emergencyCall_reject_mmi" msgid="5056319534549705785">"Kodet MMI nuk mund të formohen gjatë një telefonate urgjence."</string>
+    <string name="noApplications" msgid="1703149220378476198">"Asnjë aplikacion nuk mund ta kryejë këtë veprim."</string>
+    <string name="android_system_label" msgid="2730611410547215779">"Sistemi Android"</string>
 </resources>

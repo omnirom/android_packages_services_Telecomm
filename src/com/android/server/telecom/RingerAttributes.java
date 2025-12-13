@@ -16,6 +16,8 @@
 
 package com.android.server.telecom;
 
+import android.telecom.Log;
+
 public class RingerAttributes {
     public static class Builder {
         private boolean mEndEarly;
@@ -75,6 +77,21 @@ public class RingerAttributes {
     }
 
     private boolean mEndEarly;
+
+    @Override
+    public String toString() {
+        return "RingerAttributes{" +
+                "mEndEarly=" + mEndEarly +
+                ", mLetDialerHandleRinging=" + mLetDialerHandleRinging +
+                ", mAcquireAudioFocus=" + mAcquireAudioFocus +
+                ", mRingerAudible=" + mRingerAudible +
+                ", mInaudibleReason='" + mInaudibleReason + '\'' +
+                ", mShouldRingForContact=" + mShouldRingForContact +
+                ", mSilentRingingRequested=" + mSilentRingingRequested +
+                ", mWorkProfileQuietMode=" + mWorkProfileQuietMode +
+                '}';
+    }
+
     private boolean mLetDialerHandleRinging;
     private boolean mAcquireAudioFocus;
     private boolean mRingerAudible;
@@ -95,6 +112,7 @@ public class RingerAttributes {
         mShouldRingForContact = shouldRingForContact;
         mSilentRingingRequested = silentRingingRequested;
         mWorkProfileQuietMode = workProfileQuietMode;
+        Log.i(this, toString());
     }
 
     public boolean isEndEarly() {

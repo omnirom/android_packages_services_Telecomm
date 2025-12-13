@@ -19,6 +19,8 @@
     <string name="telecommAppLabel" product="default" msgid="1825598513414129827">"Chamadas telefónicas"</string>
     <string name="userCallActivityLabel" product="default" msgid="3605391260292846248">"Teléfono"</string>
     <string name="unknown" msgid="6993977514360123431">"Descoñecido"</string>
+    <string name="private_num" msgid="7971471360030811411">"Número privado"</string>
+    <string name="payphone" msgid="7652075262156192657">"Teléfono público"</string>
     <string name="notification_missedCallTitle" msgid="5060387047205532974">"Chamada perdida"</string>
     <string name="notification_missedWorkCallTitle" msgid="6965463282259034953">"Chamada de traballo perdida"</string>
     <string name="notification_missedCallsTitle" msgid="3910479625507893809">"Chamadas perdidas"</string>
@@ -43,7 +45,7 @@
     <string name="respond_via_sms_setting_title_2" msgid="4914853536609553457">"Editar respostas rápidas"</string>
     <string name="respond_via_sms_setting_summary" msgid="8054571501085436868"></string>
     <string name="respond_via_sms_edittext_dialog_title" msgid="6579353156073272157">"Resposta rápida"</string>
-    <string name="respond_via_sms_confirmation_format" msgid="2932395476561267842">"Mensaxe enviada ao <xliff:g id="PHONE_NUMBER">%s</xliff:g>."</string>
+    <string name="respond_via_sms_confirmation_format" msgid="2619774063232350285">"Enviando mensaxe a <xliff:g id="PHONE_NUMBER">%s</xliff:g>."</string>
     <string name="respond_via_sms_failure_format" msgid="5198680980054596391">"Non se puido enviar a mensaxe ao <xliff:g id="PHONE_NUMBER">%s</xliff:g>."</string>
     <string name="enable_account_preference_title" msgid="6949224486748457976">"Contas de chamadas"</string>
     <string name="outgoing_call_not_allowed_user_restriction" msgid="3424338207838851646">"Só se permiten chamadas de emerxencia."</string>
@@ -138,7 +140,11 @@
     <string name="callFailed_too_many_calls_include_merge" msgid="2234495082825519920">"Non se pode facer ningunha chamada porque xa hai dúas en curso. Para poder facer unha nova, desconecta unha desas dúas ou combínaas nunha conferencia."</string>
     <string name="callFailed_too_many_calls_exclude_merge" msgid="8616011288480453495">"Non se pode facer ningunha chamada porque xa hai dúas en curso. Desconecta unha delas antes de facer outra."</string>
     <string name="callFailed_unholdable_call" msgid="7580834131274566524">"Non se pode facer ningunha chamada porque hai unha que non é posible poñer en espera. Desconéctaa para poder facer unha nova."</string>
+    <string name="callSwapFailed_unholdable_call" msgid="4779540296319850415">"Non se pode intercambiar a chamada activa porque non admite a función de pór en espera. Desconecta a chamada para activar a chamada en espera."</string>
     <string name="callFailed_already_ringing" msgid="7931232733958098270">"Non podes chamar porque te están chamando nestes momentos. Para poder facer unha chamada, primeiro tes que responder á outra ou rexeitala."</string>
     <string name="callFailed_reject_mmi" msgid="5219280796733595167">"Este código MMI non está dispoñible para chamadas en varias contas."</string>
+    <string name="call_hangup_fail_during_merge" msgid="4216015878956379200">"Non se pode desconectar a chamada cando se está combinando."</string>
     <string name="emergencyCall_reject_mmi" msgid="5056319534549705785">"Non se poden marcar códigos MMI durante as chamadas de emerxencia."</string>
+    <string name="noApplications" msgid="1703149220378476198">"Ningunha aplicación pode realizar esta acción."</string>
+    <string name="android_system_label" msgid="2730611410547215779">"Sistema Android"</string>
 </resources>

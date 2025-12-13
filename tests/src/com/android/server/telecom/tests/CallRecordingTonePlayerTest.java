@@ -43,6 +43,8 @@ import android.media.MediaRecorder;
 import android.os.Handler;
 import android.os.Looper;
 import android.platform.test.annotations.RequiresFlagsDisabled;
+import android.platform.test.flag.junit.CheckFlagsRule;
+import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.telecom.PhoneAccountHandle;
 
 import androidx.test.filters.MediumTest;
@@ -53,10 +55,12 @@ import com.android.server.telecom.CallRecordingTonePlayer;
 import com.android.server.telecom.CallState;
 import com.android.server.telecom.TelecomSystem;
 import com.android.server.telecom.Timeouts;
+import com.android.server.telecom.flags.FeatureFlags;
 import com.android.server.telecom.flags.Flags;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -75,6 +79,9 @@ import java.util.List;
 @RunWith(JUnit4.class)
 @RequiresFlagsDisabled(Flags.FLAG_TELECOM_RESOLVE_HIDDEN_DEPENDENCIES)
 public class CallRecordingTonePlayerTest extends TelecomTestCase {
+
+    @Rule
+    public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
 
     private static final String PHONE_ACCOUNT_PACKAGE = "com.android.telecom.test";
     private static final String PHONE_ACCOUNT_CLASS = "MyFancyConnectionService";
@@ -98,11 +105,11 @@ public class CallRecordingTonePlayerTest extends TelecomTestCase {
     public void setUp() throws Exception {
         super.setUp();
         MockitoAnnotations.initMocks(this);
-        when(mTimeouts.getCallRecordingToneRepeatIntervalMillis(nullable(ContentResolver.class)))
-                .thenReturn(500L);
+        when(mTimeouts.getCallRecordingToneRepeatIntervalMillis(nullable(Context.class),
+                any(FeatureFlags.class))).thenReturn(500L);
         mCallRecordingTonePlayer = new CallRecordingTonePlayer(
                 mComponentContextFixture.getTestDouble().getApplicationContext(),
-                mAudioManager, mTimeouts, mSyncRoot);
+                mAudioManager, mTimeouts, mSyncRoot, mFeatureFlags);
         when(mAudioManager.getActiveRecordingConfigurations()).thenReturn(null);
     }
 

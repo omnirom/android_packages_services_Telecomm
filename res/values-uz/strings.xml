@@ -19,6 +19,8 @@
     <string name="telecommAppLabel" product="default" msgid="1825598513414129827">"Telefon chaqiruvlari"</string>
     <string name="userCallActivityLabel" product="default" msgid="3605391260292846248">"Telefon"</string>
     <string name="unknown" msgid="6993977514360123431">"Noma’lum"</string>
+    <string name="private_num" msgid="7971471360030811411">"Maxfiy raqam"</string>
+    <string name="payphone" msgid="7652075262156192657">"Taksofon"</string>
     <string name="notification_missedCallTitle" msgid="5060387047205532974">"Javobsiz chaqiruv"</string>
     <string name="notification_missedWorkCallTitle" msgid="6965463282259034953">"Javobsiz chaqiruv (ish)"</string>
     <string name="notification_missedCallsTitle" msgid="3910479625507893809">"Javobsiz chaqiruvlar"</string>
@@ -43,7 +45,7 @@
     <string name="respond_via_sms_setting_title_2" msgid="4914853536609553457">"Tezkor javoblar"</string>
     <string name="respond_via_sms_setting_summary" msgid="8054571501085436868"></string>
     <string name="respond_via_sms_edittext_dialog_title" msgid="6579353156073272157">"Tezkor javob"</string>
-    <string name="respond_via_sms_confirmation_format" msgid="2932395476561267842">"Xabar <xliff:g id="PHONE_NUMBER">%s</xliff:g>ga jo‘natildi."</string>
+    <string name="respond_via_sms_confirmation_format" msgid="2619774063232350285">"<xliff:g id="PHONE_NUMBER">%s</xliff:g> raqamiga xabar yuborilmoqda."</string>
     <string name="respond_via_sms_failure_format" msgid="5198680980054596391">"Xabar <xliff:g id="PHONE_NUMBER">%s</xliff:g> raqamiga yuborilmadi."</string>
     <string name="enable_account_preference_title" msgid="6949224486748457976">"Chaqiruv uchun hisoblar"</string>
     <string name="outgoing_call_not_allowed_user_restriction" msgid="3424338207838851646">"Faqat favqulodda qo‘ng‘iroqlarga ruxsat berilgan."</string>
@@ -138,7 +140,11 @@
     <string name="callFailed_too_many_calls_include_merge" msgid="2234495082825519920">"Telefon qilish imkonsiz, chunki ayni paytda ikkita chaqiruv davom etmoqda. Telefon qilish uchun chaqiruvlardan birini yakunlang yoki ularni konferens-aloqaga birlashtiring."</string>
     <string name="callFailed_too_many_calls_exclude_merge" msgid="8616011288480453495">"Telefon qilish imkonsiz, chunki ayni paytda ikkita chaqiruv davom etmoqda. Telefon qilish uchun avval mavjud bittasini uzing."</string>
     <string name="callFailed_unholdable_call" msgid="7580834131274566524">"Chaqirish imkonsiz, chunki joriy chaqiruv pauza qilinmaydi. Yangisini boshlash uchun chaqiruvni bekor qiling."</string>
+    <string name="callSwapFailed_unholdable_call" msgid="4779540296319850415">"Faol chaqiruvni almashtirish imkonsiz, chunki u ushlab turishni dastaklamaydi. Ushlab turilgan chaqiruvni faol qilish uchun chaqiruvni uzing."</string>
     <string name="callFailed_already_ringing" msgid="7931232733958098270">"Telefon qilish imkonsiz. Telefon qilish uchun avval kiruvchi chaqiruvni qabul qiling yoki rad eting."</string>
     <string name="callFailed_reject_mmi" msgid="5219280796733595167">"Bu MMI kodi bir nechta hisobdagi chaqiruvlarda ishlamaydi."</string>
+    <string name="call_hangup_fail_during_merge" msgid="4216015878956379200">"Birlashtirish paytida chaqiruvni uzish imkonsiz."</string>
     <string name="emergencyCall_reject_mmi" msgid="5056319534549705785">"Favqulodda chaqiruv paytida MMI kodlarini terish imkonsiz."</string>
+    <string name="noApplications" msgid="1703149220378476198">"Hech qanday ilova ushbu amalni bajara olmaydi."</string>
+    <string name="android_system_label" msgid="2730611410547215779">"Android tizimi"</string>
 </resources>

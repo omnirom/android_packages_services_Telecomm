@@ -27,8 +27,7 @@ import android.telecom.Log;
 import android.telecom.TelecomManager;
 
 import com.android.internal.util.IndentingPrintWriter;
-
-// TODO: Needed for move to system service: import com.android.internal.R;
+import com.android.server.telecom.flags.FeatureFlags;
 
 final class TtyManager implements WiredHeadsetManager.Listener {
     private final TtyBroadcastReceiver mReceiver = new TtyBroadcastReceiver();
@@ -37,16 +36,24 @@ final class TtyManager implements WiredHeadsetManager.Listener {
     private int mPreferredTtyMode = TelecomManager.TTY_MODE_OFF;
     private int mCurrentTtyMode = TelecomManager.TTY_MODE_OFF;
 
-    TtyManager(Context context, WiredHeadsetManager wiredHeadsetManager) {
+    TtyManager(Context context,
+            WiredHeadsetManager wiredHeadsetManager,
+            FeatureFlags featureFlags) {
         mContext = context;
         mWiredHeadsetManager = wiredHeadsetManager;
         mWiredHeadsetManager.addListener(this);
-
-        mPreferredTtyMode = Settings.Secure.getIntForUser(
-                mContext.getContentResolver(),
-                Settings.Secure.PREFERRED_TTY_MODE,
-                TelecomManager.TTY_MODE_OFF,
-                mContext.getUserId());
+        if (featureFlags.resolveHiddenDependenciesTwo()) {
+            mPreferredTtyMode = Settings.Secure.getInt(
+                    mContext.getContentResolver(),
+                    Settings.Secure.PREFERRED_TTY_MODE,
+                    TelecomManager.TTY_MODE_OFF);
+        } else {
+            mPreferredTtyMode = Settings.Secure.getIntForUser(
+                    mContext.getContentResolver(),
+                    Settings.Secure.PREFERRED_TTY_MODE,
+                    TelecomManager.TTY_MODE_OFF,
+                    UserUtil.getUserIdFromContext(context, featureFlags));
+        }
 
         IntentFilter intentFilter = new IntentFilter(
                 TelecomManager.ACTION_TTY_PREFERRED_MODE_CHANGED);

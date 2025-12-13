@@ -50,7 +50,6 @@ import android.telecom.CallAudioState;
 import android.telecom.CallDiagnosticService;
 import android.telecom.CallDiagnostics;
 import android.telecom.CallException;
-import android.telecom.CallerInfo;
 import android.telecom.Conference;
 import android.telecom.Connection;
 import android.telecom.ConnectionService;
@@ -84,6 +83,7 @@ import com.android.server.telecom.callsequencing.CallTransaction;
 import com.android.server.telecom.callsequencing.TransactionManager;
 import com.android.server.telecom.callsequencing.VerifyCallStateChangeTransaction;
 import com.android.server.telecom.callsequencing.CallTransactionResult;
+import com.android.server.telecom.util.CallerInfo;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -102,6 +102,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 /**
@@ -426,6 +427,12 @@ public class Call implements CreateConnectionResponse, EventManager.Loggable,
     /** The state of the call. */
     private int mState;
 
+    /** The use case for audio processing when the call is in STATE_AUDIO_PROCESSING */
+    private int mAudioProcessingUseCase = android.telecom.Call.AUDIO_PROCESSING_USE_CASE_UNKNOWN;
+
+    /** flag to signal when the audio processing is properly exited */
+    private boolean mIsProperlyExitingAudioProcessing = false;
+
     /**
      * Determines whether the {@link ConnectionService} has responded to the initial request to
      * create the connection.
@@ -648,6 +655,8 @@ public class Call implements CreateConnectionResponse, EventManager.Loggable,
     private boolean mIsTransactionalCall = false;
     private CallingPackageIdentity mCallingPackageIdentity = new CallingPackageIdentity();
     private boolean mSkipAutoUnhold = false;
+    private boolean mIsTransactionalLogExcluded = false;
+    private int mLastCallStateBeforeDisconnect = CallState.DISCONNECTED;
 
     /**
      * CallingPackageIdentity is responsible for storing properties about the calling package that
@@ -883,6 +892,21 @@ public class Call implements CreateConnectionResponse, EventManager.Loggable,
     private CompletableFuture<Boolean> mBtIcsFuture;
 
     /**
+     * Tracks whether this call has been logged to the call log to prevent duplicate entries.
+     */
+    private final AtomicBoolean mHasBeenLogged = new AtomicBoolean(false);
+
+    /**
+     * Atomically checks if the call has been logged and sets the logged status to true.
+     *
+     * @return {@code true} if the call had ALREADY been logged, {@code false} if it had not been
+     * logged and was just now marked as such.
+     */
+    public boolean getAndSetHasBeenLogged() {
+        return mHasBeenLogged.getAndSet(true);
+    }
+
+    /**
      * Map of CachedCallbacks that are pending to be executed when the *ServiceWrapper connects
      */
     private final Map<String, List<CachedCallback>> mCachedServiceCallbacks = new HashMap<>();
@@ -995,6 +1019,7 @@ public class Call implements CreateConnectionResponse, EventManager.Loggable,
         mState = (isConference && callDirection != CALL_DIRECTION_INCOMING &&
                 callDirection != CALL_DIRECTION_OUTGOING) ?
                 CallState.ACTIVE : CallState.NEW;
+        mAudioProcessingUseCase = android.telecom.Call.AUDIO_PROCESSING_USE_CASE_UNKNOWN;
         mContext = context;
         mCallsManager = callsManager;
         mLock = lock;
@@ -1306,6 +1331,10 @@ public class Call implements CreateConnectionResponse, EventManager.Loggable,
         return mState;
     }
 
+    public int getAudioProcessingUseCase() {
+        return mAudioProcessingUseCase;
+    }
+
     /**
      * Similar to {@link #getState()}, except will return {@link CallState#DISCONNECTING} if the
      * call is locally disconnecting.  This is the call state which is reported to the
@@ -1416,9 +1445,20 @@ public class Call implements CreateConnectionResponse, EventManager.Loggable,
      * else it is failed, and the call is still in its original state.
      */
     public boolean setState(int newState, String tag) {
+        if (isIllegalAudioProcessingTransition(newState)) {
+            handleIllegalAudioProcessingTransition(newState);
+            return false; // Reject the state transition
+        }
         if (mState != newState) {
             Log.v(this, "setState %s -> %s", CallState.toString(mState),
                     CallState.toString(newState));
+
+            // Save the previous call state to figure out if the call failed during setup or while
+            // the call was still ongoing. Used to determine if we should auto-unhold the bg call
+            // when this call has been disconnected due to an error.
+            if (newState == CallState.DISCONNECTED || newState == CallState.ABORTED) {
+                mLastCallStateBeforeDisconnect = mState;
+            }
 
             if (newState == CallState.DISCONNECTED && shouldContinueProcessingAfterDisconnect()) {
                 Log.w(this, "continuing processing disconnected call with another service");
@@ -1504,6 +1544,9 @@ public class Call implements CreateConnectionResponse, EventManager.Loggable,
                 case CallState.SIMULATED_RINGING:
                     event = LogUtils.Events.SET_SIMULATED_RINGING;
                     break;
+                case CallState.LOCAL_VOICEMAIL:
+                    event = LogUtils.Events.SET_LOCAL_VOICEMAIL;
+                    break;
             }
             if (event != null) {
                 // The string data should be just the tag.
@@ -1531,6 +1574,67 @@ public class Call implements CreateConnectionResponse, EventManager.Loggable,
                     .write(newState);
         }
         return true;
+    }
+
+    public void setAudioProcessingUseCase(int useCase) {
+        mAudioProcessingUseCase = useCase;
+    }
+
+    /**
+     * Determines if an attempted state transition out of AUDIO_PROCESSING is illegal.
+     * <p>
+     * An illegal transition occurs if the call is in the audio processing state but the exit
+     * was not initiated by the sanctioned {@code exitBackgroundAudioProcessing} API.
+     * The only universally permitted transition is to {@code DISCONNECTED}.
+     *
+     * @param newState The state the call is attempting to transition to.
+     * @return {@code true} if the transition is illegal, {@code false} otherwise.
+     */
+    private boolean isIllegalAudioProcessingTransition(int newState) {
+        if (!mFlags.preventIllegalAudioProcessingExit()) {
+            return false;
+        }
+        // This is the core guard condition. A transition is considered an "unauthorized attempt"
+        // if the call is currently in the AUDIO_PROCESSING state, but the exit was NOT initiated
+        // via the sanctioned CallsManager#exitBackgroundAudioProcessing API (which is tracked
+        // by the transient mIsExitingAudioProcessing flag).
+        boolean isAttemptingUnauthorizedExit = (mState == CallState.AUDIO_PROCESSING)
+                && !mIsProperlyExitingAudioProcessing;
+        // The ASK_TO_HOLD use case is explicitly exempt from this strict check. Its worst-case
+        // failure is a transition to an active call instead of a held call, which is a
+        // recoverable inconvenience for the user, not a critical failure like a silent call.
+        // All other use cases (like CALL_SCREENING) must be strictly protected.
+        boolean useCaseRequiresStrictExitCheck = getAudioProcessingUseCase()
+                != android.telecom.Call.AUDIO_PROCESSING_USE_CASE_ASK_TO_HOLD;
+        // An unauthorized exit is illegal if it's not simply disconnecting.
+        boolean isIllegalDestinationState = newState != CallState.DISCONNECTED;
+        // disconnect call if all conditions met
+        return isAttemptingUnauthorizedExit && useCaseRequiresStrictExitCheck
+                && isIllegalDestinationState;
+    }
+
+    /**
+     * Handles an illegal state transition by logging the event and disconnecting the call
+     * with an error cause.
+     *
+     * @param illegalState The state that was improperly requested.
+     */
+    private void handleIllegalAudioProcessingTransition(int illegalState) {
+        Log.w(this, "Illegal state transition from AUDIO_PROCESSING to %s for"
+                        + " use case %d. Disconnecting.",
+                CallState.toString(illegalState), getAudioProcessingUseCase());
+        setLocallyDisconnecting(true);
+        setOverrideDisconnectCauseCode(new DisconnectCause(DisconnectCause.ERROR,
+                "Illegal audio processing state transition"));
+        disconnect("Illegal state transition from audio processing");
+    }
+
+    /**
+     * Sets a transient flag indicating a legitimate exit from audio processing is underway.
+     * This should only be set by CallsManager.
+     */
+    public void setIsProperlyExitingAudioProcessing(boolean isExiting) {
+        mIsProperlyExitingAudioProcessing = isExiting;
     }
 
     void setRingbackRequested(boolean ringbackRequested) {
@@ -1938,7 +2042,6 @@ public class Call implements CreateConnectionResponse, EventManager.Loggable,
                     mContext.getPackageManager());
             // Set the associated user for the call for MT calls based on the target phone account.
             UserHandle associatedUser = UserUtil.getAssociatedUserForCall(
-                    mFlags.associatedUserRefactorForWorkProfile(),
                     mCallsManager.getPhoneAccountRegistrar(), mCallsManager.getCurrentUserHandle(),
                     accountHandle);
             if (isIncoming() && !associatedUser.equals(mAssociatedUser)) {
@@ -1978,13 +2081,55 @@ public class Call implements CreateConnectionResponse, EventManager.Loggable,
     /**
      * Determines if this Call should be written to the call log.
      * @return {@code true} for managed calls or for self-managed calls which have the
-     * {@link PhoneAccount#EXTRA_LOG_SELF_MANAGED_CALLS} extra set.
+     * {@link PhoneAccount#EXTRA_LOG_SELF_MANAGED_CALLS} extra set (deprecated). Refer to {@link }.
      */
     public boolean isLoggedSelfManaged() {
-        if (!isSelfManaged()) {
-            // Managed calls are always logged.
-            return true;
+        // This behavior should be deprecated once the integrated call logs flag has rolled out.
+        if (!processShouldLogVoipCall() || mFlags.integratedCallLogs()) {
+            return false;
         }
+
+        PhoneAccount phoneAccount = mCallsManager.getPhoneAccountRegistrar()
+                .getPhoneAccountUnchecked(getTargetPhoneAccount());
+        return phoneAccount.getExtras() != null && phoneAccount.getExtras().getBoolean(
+                PhoneAccount.EXTRA_LOG_SELF_MANAGED_CALLS, false);
+    }
+
+    /**
+     * Determines if we should log the transactional call (for call log integration).
+     * @return {@code true} if the call is transactional and meets all the requirements to be
+     * logged.
+     */
+    public boolean isLoggedTransactional() {
+        Intent intent = new Intent(TelecomManager.ACTION_CALL_BACK);
+        PhoneAccountHandle handle = getTargetPhoneAccount();
+        if (!processShouldLogVoipCall() || !mFlags.integratedCallLogs() || handle == null) {
+            return false;
+        }
+        // Ensure that the application registers the intent (opt-in).
+        intent.setPackage(handle.getComponentName().getPackageName());
+        boolean pkgSupportsIntent = !mContext.getPackageManager().queryIntentActivities(intent,
+                PackageManager.MATCH_ALL).isEmpty();
+
+        boolean shouldLogTransactionalCall = isTransactionalCall() && pkgSupportsIntent
+                && !isTransactionalLogExcluded();
+        if (!shouldLogTransactionalCall) {
+            Log.i(this, "isLoggedTransactional: isTransactionalCall: %b, pkg(%s) supports "
+                            + "intent: %b, is log excluded: %b", isTransactionalCall(),
+                    handle.getComponentName().getPackageName(), pkgSupportsIntent,
+                    isTransactionalLogExcluded());
+        }
+        return isTransactionalCall() && pkgSupportsIntent && !isTransactionalLogExcluded();
+    }
+
+    /**
+     * Performs basic pre-processing to determine if we should log the voip call. There is an
+     * additional specified check that varies between self-managed (deprecated) and transactional
+     * calls (call log integration).
+     * @return {@code true} if pre-processing dictates that we should log the voip call.
+     */
+    @VisibleForTesting
+    public boolean processShouldLogVoipCall() {
         if (getTargetPhoneAccount() == null) {
             return false;
         }
@@ -2005,9 +2150,11 @@ public class Call implements CreateConnectionResponse, EventManager.Loggable,
             // Can't log schemes other than SIP or TEL for now.
             return false;
         }
+        return true;
+    }
 
-        return phoneAccount.getExtras() != null && phoneAccount.getExtras().getBoolean(
-                PhoneAccount.EXTRA_LOG_SELF_MANAGED_CALLS, false);
+    public boolean isManaged() {
+        return !isSelfManaged() && !isTransactionalCall();
     }
 
     public boolean isIncoming() {
@@ -2119,14 +2266,12 @@ public class Call implements CreateConnectionResponse, EventManager.Loggable,
     }
 
     private void processCachedCallbacks(CallSourceService service) {
-        if(mFlags.cacheCallAudioCallbacks()) {
-            synchronized (mCachedServiceCallbacks) {
-                for (List<CachedCallback> callbacks : mCachedServiceCallbacks.values()) {
-                    callbacks.forEach( callback -> callback.executeCallback(service, this));
-                }
-                // clear list for memory cleanup purposes. The Service should never be reset
-                mCachedServiceCallbacks.clear();
+        synchronized (mCachedServiceCallbacks) {
+            for (List<CachedCallback> callbacks : mCachedServiceCallbacks.values()) {
+                callbacks.forEach(callback -> callback.executeCallback(service, this));
             }
+            // clear list for memory cleanup purposes. The Service should never be reset
+            mCachedServiceCallbacks.clear();
         }
     }
 
@@ -2360,12 +2505,6 @@ public class Call implements CreateConnectionResponse, EventManager.Loggable,
     }
 
     public void setTransactionalCapabilities(Bundle extras) {
-        if (!mFlags.remapTransactionalCapabilities()) {
-            setConnectionCapabilities(
-                    extras.getInt(CallAttributes.CALL_CAPABILITIES_KEY,
-                            CallAttributes.SUPPORTS_SET_INACTIVE), true);
-            return;
-        }
         int connectionCapabilitesBitmap = 0;
         int transactionalCapabilitiesBitmap = extras.getInt(
                 CallAttributes.CALL_CAPABILITIES_KEY,
@@ -2431,6 +2570,9 @@ public class Call implements CreateConnectionResponse, EventManager.Loggable,
         if (changedProperties != 0) {
             int previousProperties = mConnectionProperties;
             mConnectionProperties = connectionProperties;
+            mIsEmergencyCall = mIsEmergencyCall || (mConnectionProperties &
+                                    Connection.PROPERTY_NETWORK_IDENTIFIED_EMERGENCY_CALL)
+                                    == Connection.PROPERTY_NETWORK_IDENTIFIED_EMERGENCY_CALL;
             boolean didRttChange =
                     (changedProperties & Connection.PROPERTY_IS_RTT) == Connection.PROPERTY_IS_RTT;
             if (didRttChange) {
@@ -2580,7 +2722,7 @@ public class Call implements CreateConnectionResponse, EventManager.Loggable,
 
         service.incrementAssociatedCallCount();
 
-        if (mFlags.updatedRcsCallCountTracking() && remoteService != null) {
+        if (remoteService != null) {
             remoteService.incrementAssociatedCallCount();
             mRemoteConnectionService = remoteService;
         }
@@ -2612,17 +2754,11 @@ public class Call implements CreateConnectionResponse, EventManager.Loggable,
         if (mConnectionService != null) {
             ConnectionServiceWrapper serviceTemp = mConnectionService;
 
-            if (mFlags.updatedRcsCallCountTracking()) {
-                // Continue to track the former CS for this call so that it doesn't unbind early:
-                mRemoteConnectionService = serviceTemp;
-            }
+            // Continue to track the former CS for this call so that it doesn't unbind early:
+            mRemoteConnectionService = serviceTemp;
 
             mConnectionService = null;
             serviceTemp.removeCall(this);
-
-            if (!mFlags.updatedRcsCallCountTracking()) {
-                serviceTemp.decrementAssociatedCallCount(true /*isSuppressingUnbind*/);
-            }
         }
 
         service.incrementAssociatedCallCount();
@@ -2649,7 +2785,7 @@ public class Call implements CreateConnectionResponse, EventManager.Loggable,
             // to do.
             decrementAssociatedCallCount(serviceTemp);
 
-            if (mFlags.updatedRcsCallCountTracking() && remoteServiceTemp != null) {
+            if (remoteServiceTemp != null) {
                 decrementAssociatedCallCount(remoteServiceTemp);
             }
         }
@@ -2896,12 +3032,10 @@ public class Call implements CreateConnectionResponse, EventManager.Loggable,
         if (mState == CallState.NEW || mState == CallState.SELECT_PHONE_ACCOUNT ||
                 mState == CallState.CONNECTING) {
             Log.i(this, "disconnect: Aborting call %s", getId());
-            if (mFlags.enableCallSequencing()) {
-                disconnectFutureHandler = awaitCallStateChangeAndMaybeDisconnectCall(
-                        false /* shouldDisconnectUponTimeout */, "disconnect",
-                        CallState.DISCONNECTED, CallState.ABORTED);
-            }
             abort(disconnectionTimeout);
+            disconnectFutureHandler = awaitCallStateChangeAndMaybeDisconnectCall(
+                    false /* shouldDisconnectUponTimeout */, "disconnect",
+                    CallState.DISCONNECTED, CallState.ABORTED);
         } else if (mState != CallState.ABORTED && mState != CallState.DISCONNECTED) {
             if (mState == CallState.AUDIO_PROCESSING && !hasGoneActiveBefore()) {
                 setOverrideDisconnectCauseCode(new DisconnectCause(DisconnectCause.REJECTED));
@@ -2924,11 +3058,9 @@ public class Call implements CreateConnectionResponse, EventManager.Loggable,
                 // confirms that the call was actually disconnected. Only then is the
                 // association between call and connection service severed, see
                 // {@link CallsManager#markCallAsDisconnected}.
-                if (mFlags.enableCallSequencing()) {
-                    disconnectFutureHandler = awaitCallStateChangeAndMaybeDisconnectCall(
-                            false /* shouldDisconnectUponTimeout */, "disconnect",
-                            CallState.DISCONNECTED);
-                }
+                disconnectFutureHandler = awaitCallStateChangeAndMaybeDisconnectCall(
+                        false /* shouldDisconnectUponTimeout */, "disconnect",
+                        CallState.DISCONNECTED);
                 mConnectionService.disconnect(this);
             }
         }
@@ -2939,7 +3071,12 @@ public class Call implements CreateConnectionResponse, EventManager.Loggable,
         if (mCreateConnectionProcessor != null &&
                 !mCreateConnectionProcessor.isProcessingComplete()) {
             mCreateConnectionProcessor.abort();
-        } else if (mState == CallState.NEW || mState == CallState.SELECT_PHONE_ACCOUNT
+        } else if (mFlags.echoAbortTransactionalOutgoing() && mIsTransactionalCall) {
+            CompletableFuture<Boolean> wasCompleted = mTransactionalService.onDisconnect(this,
+                    new DisconnectCause(DisconnectCause.CANCELED));
+            Log.d(this, "abort: wasTransactionCompleted=[%b", wasCompleted);
+        }
+        else if (mState == CallState.NEW || mState == CallState.SELECT_PHONE_ACCOUNT
                 || mState == CallState.CONNECTING) {
             if (disconnectionTimeout > 0) {
                 // If the cancelation was from NEW_OUTGOING_CALL with a timeout of > 0
@@ -2991,10 +3128,8 @@ public class Call implements CreateConnectionResponse, EventManager.Loggable,
             // that the call is in a non-STATE_RINGING state before changing the UI. See
             // {@link ConnectionServiceAdapter#setActive} and other set* methods.
             if (mConnectionService != null) {
-                if (mFlags.enableCallSequencing()) {
-                    answerCallFuture = awaitCallStateChangeAndMaybeDisconnectCall(
-                            false /* shouldDisconnectUponTimeout */, "answer", CallState.ACTIVE);
-                }
+                answerCallFuture = awaitCallStateChangeAndMaybeDisconnectCall(
+                        false /* shouldDisconnectUponTimeout */, "answer", CallState.ACTIVE);
                 mConnectionService.answer(this, videoState);
             } else if (mTransactionalService != null) {
                 return mTransactionalService.onAnswer(this, videoState);
@@ -3096,11 +3231,9 @@ public class Call implements CreateConnectionResponse, EventManager.Loggable,
                 return mTransactionalService.onDisconnect(this,
                         new DisconnectCause(DisconnectCause.REJECTED));
             } else if (mConnectionService != null) {
-                if (mFlags.enableCallSequencing()) {
-                    rejectFutureHandler = awaitCallStateChangeAndMaybeDisconnectCall(
-                            false /* shouldDisconnectUponTimeout */, "reject",
-                            CallState.DISCONNECTED);
-                }
+                rejectFutureHandler = awaitCallStateChangeAndMaybeDisconnectCall(
+                        false /* shouldDisconnectUponTimeout */, "reject",
+                        CallState.DISCONNECTED);
                 mConnectionService.disconnect(this);
                 return rejectFutureHandler;
             } else {
@@ -3116,11 +3249,9 @@ public class Call implements CreateConnectionResponse, EventManager.Loggable,
                 return mTransactionalService.onDisconnect(this,
                         new DisconnectCause(DisconnectCause.REJECTED));
             } else if (mConnectionService != null) {
-                if (mFlags.enableCallSequencing()) {
-                    rejectFutureHandler = awaitCallStateChangeAndMaybeDisconnectCall(
-                            false /* shouldDisconnectUponTimeout */, "reject",
-                            CallState.DISCONNECTED);
-                }
+                rejectFutureHandler = awaitCallStateChangeAndMaybeDisconnectCall(
+                        false /* shouldDisconnectUponTimeout */, "reject",
+                        CallState.DISCONNECTED);
                 mConnectionService.reject(this, rejectWithMessage, textMessage);
                 return rejectFutureHandler;
             } else {
@@ -3148,11 +3279,9 @@ public class Call implements CreateConnectionResponse, EventManager.Loggable,
                 return mTransactionalService.onDisconnect(this,
                         new DisconnectCause(DisconnectCause.REJECTED));
             } else if (mConnectionService != null) {
-                if (mFlags.enableCallSequencing()) {
-                    rejectFutureHandler = awaitCallStateChangeAndMaybeDisconnectCall(
-                            false /* shouldDisconnectUponTimeout */, "reject",
-                            CallState.DISCONNECTED);
-                }
+                rejectFutureHandler = awaitCallStateChangeAndMaybeDisconnectCall(
+                        false /* shouldDisconnectUponTimeout */, "reject",
+                        CallState.DISCONNECTED);
                 mConnectionService.disconnect(this);
             } else {
                 Log.e(this, new NullPointerException(),
@@ -3166,11 +3295,9 @@ public class Call implements CreateConnectionResponse, EventManager.Loggable,
                 return mTransactionalService.onDisconnect(this,
                         new DisconnectCause(DisconnectCause.REJECTED));
             } else if (mConnectionService != null) {
-                if (mFlags.enableCallSequencing()) {
-                    rejectFutureHandler = awaitCallStateChangeAndMaybeDisconnectCall(
-                            false /* shouldDisconnectUponTimeout */, "reject",
-                            CallState.DISCONNECTED);
-                }
+                rejectFutureHandler = awaitCallStateChangeAndMaybeDisconnectCall(
+                        false /* shouldDisconnectUponTimeout */, "reject",
+                        CallState.DISCONNECTED);
                 mConnectionService.rejectWithReason(this, rejectReason);
             } else {
                 Log.e(this, new NullPointerException(),
@@ -3242,7 +3369,7 @@ public class Call implements CreateConnectionResponse, EventManager.Loggable,
             if (mTransactionalService != null) {
                 return mTransactionalService.onSetInactive(this);
             } else if (mConnectionService != null) {
-                if (mFlags.transactionalCsVerifier() || mFlags.enableCallSequencing()) {
+                if (mFlags.transactionalCsVerifier()) {
                     holdFutureHandler = awaitCallStateChangeAndMaybeDisconnectCall(isSelfManaged(),
                             "hold", CallState.ON_HOLD, CallState.DISCONNECTED).thenCompose(
                                     (result) -> {
@@ -3275,20 +3402,21 @@ public class Call implements CreateConnectionResponse, EventManager.Loggable,
             boolean shouldDisconnectUponTimeout, String callingMethod, int... targetCallStates) {
         TransactionManager tm = TransactionManager.getInstance();
         CallTransaction callTransaction = new VerifyCallStateChangeTransaction(
-                mCallsManager.getLock(), this, targetCallStates);
+                mCallsManager.getLock(), this, mFlags, targetCallStates);
         return tm.addTransaction(callTransaction,
                 new OutcomeReceiver<>() {
             @Override
             public void onResult(CallTransactionResult result) {
                 Log.i(this, "awaitCallStateChangeAndMaybeDisconnectCall: %s: onResult:"
-                        + " due to CallException=[%s]", callingMethod, result);
+                        + " success", callingMethod);
             }
 
             @Override
             public void onError(CallException e) {
                 Log.i(this, "awaitCallStateChangeAndMaybeDisconnectCall: %s: onError"
                         + " due to CallException=[%s]", callingMethod, e);
-                if (shouldDisconnectUponTimeout) {
+                if (shouldDisconnectUponTimeout && (Call.this.getState() != CallState.DISCONNECTING
+                        || Call.this.getState() != CallState.DISCONNECTED)) {
                     mCallsManager.markCallAsDisconnected(Call.this,
                             new DisconnectCause(DisconnectCause.ERROR,
                                     "did not hold in timeout window"));
@@ -3313,10 +3441,8 @@ public class Call implements CreateConnectionResponse, EventManager.Loggable,
             if (mTransactionalService != null){
                 return mTransactionalService.onSetActive(this);
             } else if (mConnectionService != null){
-                if (mFlags.enableCallSequencing()) {
-                    unholdFutureHandler = awaitCallStateChangeAndMaybeDisconnectCall(
-                            false /* shouldDisconnectUponTimeout */, "unhold", CallState.ACTIVE);
-                }
+                unholdFutureHandler = awaitCallStateChangeAndMaybeDisconnectCall(
+                        false /* shouldDisconnectUponTimeout */, "unhold", CallState.ACTIVE);
                 mConnectionService.unhold(this);
                 return unholdFutureHandler;
             } else {
@@ -3344,6 +3470,10 @@ public class Call implements CreateConnectionResponse, EventManager.Loggable,
 
     public boolean isActive() {
         return mState == CallState.ACTIVE;
+    }
+
+    public boolean isActiveFocus() {
+        return isActive() || mState == CallState.DIALING || mState == CallState.PULLING;
     }
 
     @VisibleForTesting
@@ -3404,10 +3534,9 @@ public class Call implements CreateConnectionResponse, EventManager.Loggable,
         }
 
         // If mExtra shows that the call using Volte, record it with mWasVolte
-        if (mExtras.containsKey(TelecomManager.EXTRA_CALL_NETWORK_TYPE) &&
-            mExtras.get(TelecomManager.EXTRA_CALL_NETWORK_TYPE)
-                    .equals(TelephonyManager.NETWORK_TYPE_LTE)) {
-            mWasVolte = true;
+        if (mExtras.containsKey(TelecomManager.EXTRA_CALL_NETWORK_TYPE)) {
+            mWasVolte = mExtras.get(TelecomManager.EXTRA_CALL_NETWORK_TYPE)
+                    .equals(TelephonyManager.NETWORK_TYPE_LTE);
         }
 
         if (extras.containsKey(Connection.EXTRA_ORIGINAL_CONNECTION_ID)) {
@@ -3532,7 +3661,8 @@ public class Call implements CreateConnectionResponse, EventManager.Loggable,
         return Contacts.getLookupUri(mCallerInfo.getContactId(), mCallerInfo.lookupKey);
     }
 
-    Uri getRingtone() {
+    @VisibleForTesting
+    public Uri getRingtone() {
         return mCallerInfo == null ? null : mCallerInfo.contactRingtoneUri;
     }
 
@@ -4234,7 +4364,7 @@ public class Call implements CreateConnectionResponse, EventManager.Loggable,
         if (videoProvider != null ) {
             try {
                 mVideoProviderProxy = new VideoProviderProxy(mLock, videoProvider, this,
-                        mCallsManager);
+                        mCallsManager, mFlags);
             } catch (RemoteException ignored) {
                 // Ignore RemoteException.
             }
@@ -4324,6 +4454,16 @@ public class Call implements CreateConnectionResponse, EventManager.Loggable,
             }
         }
 
+        if (mFlags.maybeRerouteAudioOnVideoStateChange()) {
+            boolean becameVideo = VideoProfile.isVideo(mVideoState)
+                    && !VideoProfile.isVideo(previousVideoState);
+            // If it became a video call while it was already active/connecting,
+            // it's possible the initial audio route was earpiece. We need to re-evaluate.
+            if (becameVideo && isActiveFocus()) {
+                mCallsManager.rerouteAudioForVideoUpgrade(this);
+            }
+        }
+
         if (mFlags.transactionalVideoState() && mIsTransactionalCall) {
             int transactionalVS = VideoProfileStateToTransactionalVideoState(mVideoState);
             if (mTransactionalService != null) {
@@ -4394,7 +4534,7 @@ public class Call implements CreateConnectionResponse, EventManager.Loggable,
      *
      * @param isLocallyDisconnecting {@code true} if this call is locally disconnecting.
      */
-    private void setLocallyDisconnecting(boolean isLocallyDisconnecting) {
+    public void setLocallyDisconnecting(boolean isLocallyDisconnecting) {
         mIsLocallyDisconnecting = isLocallyDisconnecting;
     }
 
@@ -5132,5 +5272,17 @@ public class Call implements CreateConnectionResponse, EventManager.Loggable,
 
     public boolean getSkipAutoUnhold() {
         return mSkipAutoUnhold;
+    }
+
+    public void setIsTransactionalLogExcluded(boolean result) {
+        mIsTransactionalLogExcluded = result;
+    }
+
+    public boolean isTransactionalLogExcluded() {
+        return mIsTransactionalLogExcluded;
+    }
+
+    public int getLastCallStateBeforeDisconnect() {
+        return mLastCallStateBeforeDisconnect;
     }
 }

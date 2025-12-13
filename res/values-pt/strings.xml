@@ -19,6 +19,8 @@
     <string name="telecommAppLabel" product="default" msgid="1825598513414129827">"Chamadas telefônicas"</string>
     <string name="userCallActivityLabel" product="default" msgid="3605391260292846248">"Telefone"</string>
     <string name="unknown" msgid="6993977514360123431">"Desconhecido"</string>
+    <string name="private_num" msgid="7971471360030811411">"Número privado"</string>
+    <string name="payphone" msgid="7652075262156192657">"Telefone público"</string>
     <string name="notification_missedCallTitle" msgid="5060387047205532974">"Chamada perdida"</string>
     <string name="notification_missedWorkCallTitle" msgid="6965463282259034953">"Chamada de trabalho perdida"</string>
     <string name="notification_missedCallsTitle" msgid="3910479625507893809">"Chamadas perdidas"</string>
@@ -43,7 +45,7 @@
     <string name="respond_via_sms_setting_title_2" msgid="4914853536609553457">"Editar respostas rápidas"</string>
     <string name="respond_via_sms_setting_summary" msgid="8054571501085436868"></string>
     <string name="respond_via_sms_edittext_dialog_title" msgid="6579353156073272157">"Resposta rápida"</string>
-    <string name="respond_via_sms_confirmation_format" msgid="2932395476561267842">"Mensagem enviada para <xliff:g id="PHONE_NUMBER">%s</xliff:g>."</string>
+    <string name="respond_via_sms_confirmation_format" msgid="2619774063232350285">"Enviando mensagem para <xliff:g id="PHONE_NUMBER">%s</xliff:g>."</string>
     <string name="respond_via_sms_failure_format" msgid="5198680980054596391">"Falha ao enviar a mensagem para <xliff:g id="PHONE_NUMBER">%s</xliff:g>."</string>
     <string name="enable_account_preference_title" msgid="6949224486748457976">"Contas para chamadas"</string>
     <string name="outgoing_call_not_allowed_user_restriction" msgid="3424338207838851646">"Somente chamadas de emergência são permitidas."</string>
@@ -138,7 +140,11 @@
     <string name="callFailed_too_many_calls_include_merge" msgid="2234495082825519920">"Não é possível ligar porque há duas chamadas em andamento. Encerre uma delas ou mescle-as em uma videoconferência antes de fazer outra."</string>
     <string name="callFailed_too_many_calls_exclude_merge" msgid="8616011288480453495">"Não é possível ligar porque há duas chamadas em andamento. Encerre uma das ligações antes de fazer outra."</string>
     <string name="callFailed_unholdable_call" msgid="7580834131274566524">"Não é possível ligar porque há uma chamada que não pode ficar em espera. Encerre essa ligação antes de fazer outra."</string>
+    <string name="callSwapFailed_unholdable_call" msgid="4779540296319850415">"Não é possível trocar a ligação ativa porque ela não pode ser colocada em espera. Desligue a chamada atual para ativar a que está em espera."</string>
     <string name="callFailed_already_ringing" msgid="7931232733958098270">"Não é possível ligar porque há uma ligação recebida que não foi atendida. Atenda ou rejeite essa chamada antes de fazer outra."</string>
     <string name="callFailed_reject_mmi" msgid="5219280796733595167">"Este código MMI não está disponível para chamadas em várias contas."</string>
+    <string name="call_hangup_fail_during_merge" msgid="4216015878956379200">"Não é possível desligar a ligação durante uma mesclagem."</string>
     <string name="emergencyCall_reject_mmi" msgid="5056319534549705785">"Não é possível discar códigos MMI durante uma chamada de emergência."</string>
+    <string name="noApplications" msgid="1703149220378476198">"Nenhum app pode realizar esta ação."</string>
+    <string name="android_system_label" msgid="2730611410547215779">"Sistema Android"</string>
 </resources>

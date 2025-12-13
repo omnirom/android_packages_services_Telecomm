@@ -19,6 +19,8 @@
     <string name="telecommAppLabel" product="default" msgid="1825598513414129827">"ଫୋନ୍ କଲଗୁଡ଼ିକ"</string>
     <string name="userCallActivityLabel" product="default" msgid="3605391260292846248">"ଫୋନ୍ କରନ୍ତୁ"</string>
     <string name="unknown" msgid="6993977514360123431">"ଅଜଣା"</string>
+    <string name="private_num" msgid="7971471360030811411">"ପ୍ରାଇଭେଟ ନମ୍ବର"</string>
+    <string name="payphone" msgid="7652075262156192657">"ପେଫୋନ"</string>
     <string name="notification_missedCallTitle" msgid="5060387047205532974">"ମିସଡ୍ କଲ୍‌"</string>
     <string name="notification_missedWorkCallTitle" msgid="6965463282259034953">"କାର୍ଯ୍ୟସ୍ଥଳୀରୁ ଆସିଥିବା ମିସଡ୍ କଲ୍"</string>
     <string name="notification_missedCallsTitle" msgid="3910479625507893809">"ମିସ୍ଡ କଲ୍"</string>
@@ -43,7 +45,7 @@
     <string name="respond_via_sms_setting_title_2" msgid="4914853536609553457">"ଶୀଘ୍ର ଉତ୍ତରକୁ ଏଡିଟ କରନ୍ତୁ"</string>
     <string name="respond_via_sms_setting_summary" msgid="8054571501085436868"></string>
     <string name="respond_via_sms_edittext_dialog_title" msgid="6579353156073272157">"ଶୀଘ୍ର ଉତ୍ତର"</string>
-    <string name="respond_via_sms_confirmation_format" msgid="2932395476561267842">"<xliff:g id="PHONE_NUMBER">%s</xliff:g>କୁ ମେସେଜ୍ ପଠାଗଲା।"</string>
+    <string name="respond_via_sms_confirmation_format" msgid="2619774063232350285">"<xliff:g id="PHONE_NUMBER">%s</xliff:g>କୁ ମେସେଜ ପଠାଯାଉଛି।"</string>
     <string name="respond_via_sms_failure_format" msgid="5198680980054596391">"Message failed to send to <xliff:g id="PHONE_NUMBER">%s</xliff:g>କୁ ପଠାଇବାକୁ ମେସେଜ୍‍ ବିିିିଫଳ ହୋଇଛି"</string>
     <string name="enable_account_preference_title" msgid="6949224486748457976">"କଲ୍ କରିବା ଆକାଉଣ୍ଟ"</string>
     <string name="outgoing_call_not_allowed_user_restriction" msgid="3424338207838851646">"କେବଳ ଜରୁରିକାଳୀନ କଲ୍‌କୁ ଅନୁମତି ଦିଆଯାଇଛି।"</string>
@@ -138,7 +140,11 @@
     <string name="callFailed_too_many_calls_include_merge" msgid="2234495082825519920">"ପୂର୍ବରୁ ଦୁଇଟି କଲ ଚାଲୁ ଥିବା ଯୋଗୁଁ ଆଉ ଏକ କଲ କରାଯାଇପାରିବ ନାହିଁ। ଏକ ନୂଆ କଲ କରିବା ପୂର୍ବରୁ ଗୋଟିଏ କଲକୁ ଡିସକନେଜ୍ଟ କରନ୍ତୁ କିମ୍ବା ସେଗୁଡ଼ିକୁ ଏକ କନଫରେନ୍ସ କଲରେ ମର୍ଜ କରନ୍ତୁ।"</string>
     <string name="callFailed_too_many_calls_exclude_merge" msgid="8616011288480453495">"ପୂର୍ବରୁ ଦୁଇଟି କଲ ଚାଲିଛି ତେଣୁ କଲ କରାଯାଇପାରିବ ନାହିଁ। ନୂଆ କଲ କରିବା ପୂର୍ବରୁ ଗୋଟିଏ କଲ ଡିସକନେକ୍ଟ କରନ୍ତୁ।"</string>
     <string name="callFailed_unholdable_call" msgid="7580834131274566524">"ହୋଲ୍ଡ କରିହେଉନଥିବା ଏକ କଲ ଚାଲୁ ଥିବା ଯୋଗୁଁ ଆଉ ଏକ କଲ କରାଯାଇପାରିବ ନାହିଁ। ଏକ ନୂଆ କଲ କରିବା ପୂର୍ବରୁ କଲକୁ ଡିସକନେକ୍ଟ କରନ୍ତୁ।"</string>
+    <string name="callSwapFailed_unholdable_call" msgid="4779540296319850415">"ଏହି ସକ୍ରିୟ କଲ ହୋଲ୍ଡକୁ ସପୋର୍ଟ କରୁନଥିବା ଯୋଗୁଁ ଏହାକୁ ସ୍ଵାପ କରାଯାଇପାରିବ ନାହିଁ। ହୋଲ୍ଡରେ ଥିବା କଲକୁ ସକ୍ରିୟ କରିବା ପାଇଁ କଲକୁ ଡିସକନେକ୍ଟ କରନ୍ତୁ।"</string>
     <string name="callFailed_already_ringing" msgid="7931232733958098270">"ଗୋଟିଏ ଉତ୍ତର ଦିଆଯାଇନଥିବା ଇନକମିଂ କଲ ଥିବା ଯୋଗୁଁ ଅନ୍ୟ ଏକ କଲ କରିପାରିବେ ନାହିଁ। ଏକ ନୂଆ କଲ କରିବା ପୂର୍ବରୁ ଇନକମିଂ କଲଟିର ଉତ୍ତର ଦିଅନ୍ତୁ କିମ୍ବା ଏହାକୁ ଅଗ୍ରାହ୍ୟ କରନ୍ତୁ।"</string>
     <string name="callFailed_reject_mmi" msgid="5219280796733595167">"ଏକାଧିକ ଆକାଉଣ୍ଟରେ କଲଗୁଡ଼ିକ ପାଇଁ ଏହି MMI କୋଡ ଉପଲବ୍ଧ ନାହିଁ।"</string>
+    <string name="call_hangup_fail_during_merge" msgid="4216015878956379200">"ଏକ ମର୍ଜ ସମୟରେ କଲ ଡିସକନେକ୍ଟ ହୋଇପାରିବ ନାହିଁ।"</string>
     <string name="emergencyCall_reject_mmi" msgid="5056319534549705785">"ଏକ ଜରୁରୀକାଳୀନ କଲ ସମୟରେ MMI କୋଡଗୁଡ଼ିକ ଡାଏଲ କରାଯାଇପାରିବ ନାହିଁ।"</string>
+    <string name="noApplications" msgid="1703149220378476198">"ଏହି କାର୍ଯ୍ୟ ପାଇଁ ଡିଭାଇସରେ କୌଣସି ଉପଯୁକ୍ତ ଆପ ନାହିଁ।"</string>
+    <string name="android_system_label" msgid="2730611410547215779">"Android ସିଷ୍ଟମ"</string>
 </resources>

@@ -19,6 +19,8 @@
     <string name="telecommAppLabel" product="default" msgid="1825598513414129827">"Telefonanrufe"</string>
     <string name="userCallActivityLabel" product="default" msgid="3605391260292846248">"Telefon"</string>
     <string name="unknown" msgid="6993977514360123431">"Unbekannt"</string>
+    <string name="private_num" msgid="7971471360030811411">"Private Nummer"</string>
+    <string name="payphone" msgid="7652075262156192657">"Münztelefon"</string>
     <string name="notification_missedCallTitle" msgid="5060387047205532974">"Entgangener Anruf"</string>
     <string name="notification_missedWorkCallTitle" msgid="6965463282259034953">"Verpasster geschäftlicher Anruf"</string>
     <string name="notification_missedCallsTitle" msgid="3910479625507893809">"Verpasste Anrufe"</string>
@@ -43,7 +45,7 @@
     <string name="respond_via_sms_setting_title_2" msgid="4914853536609553457">"Kurzantworten bearbeiten"</string>
     <string name="respond_via_sms_setting_summary" msgid="8054571501085436868"></string>
     <string name="respond_via_sms_edittext_dialog_title" msgid="6579353156073272157">"Kurzantwort"</string>
-    <string name="respond_via_sms_confirmation_format" msgid="2932395476561267842">"Nachricht an <xliff:g id="PHONE_NUMBER">%s</xliff:g> gesendet"</string>
+    <string name="respond_via_sms_confirmation_format" msgid="2619774063232350285">"Nachricht an <xliff:g id="PHONE_NUMBER">%s</xliff:g> wird gesendet."</string>
     <string name="respond_via_sms_failure_format" msgid="5198680980054596391">"Fehler beim Senden der Nachricht an <xliff:g id="PHONE_NUMBER">%s</xliff:g>"</string>
     <string name="enable_account_preference_title" msgid="6949224486748457976">"Anrufkonten"</string>
     <string name="outgoing_call_not_allowed_user_restriction" msgid="3424338207838851646">"Es sind nur Notrufe erlaubt."</string>
@@ -138,7 +140,11 @@
     <string name="callFailed_too_many_calls_include_merge" msgid="2234495082825519920">"Anruf nicht möglich, weil bereits zwei Anrufe aktiv sind. Beende einen der Anrufe oder führe beide Anrufe in einer Telefonkonferenz zusammen, bevor du einen neuen Anruf startest."</string>
     <string name="callFailed_too_many_calls_exclude_merge" msgid="8616011288480453495">"Anruf nicht möglich, weil bereits zwei Anrufe aktiv sind. Beende einen der Anrufe, bevor du einen neuen startest."</string>
     <string name="callFailed_unholdable_call" msgid="7580834131274566524">"Anruf nicht möglich, da ein Anruf nicht gehalten werden kann. Beende den Anruf, bevor du einen neuen Anruf startest."</string>
+    <string name="callSwapFailed_unholdable_call" msgid="4779540296319850415">"Der aktive Anruf kann nicht geändert werden, da das Halten des Anrufs nicht unterstützt wird. Du musst den Anruf trennen, damit der gehaltene Anruf zum aktiven Anruf wird."</string>
     <string name="callFailed_already_ringing" msgid="7931232733958098270">"Anruf nicht möglich, da ein nicht angenommener eingehender Anruf vorhanden ist. Nimm den eingehenden Anruf an oder lehne ihn ab, bevor du einen neuen Anruf startest."</string>
     <string name="callFailed_reject_mmi" msgid="5219280796733595167">"Dieser MMI-Code ist nicht für Anrufe mit mehreren Konten verfügbar."</string>
+    <string name="call_hangup_fail_during_merge" msgid="4216015878956379200">"Während des Zusammenführens kann der Anruf nicht getrennt werden."</string>
     <string name="emergencyCall_reject_mmi" msgid="5056319534549705785">"MMI-Codes können während eines Notrufs nicht gewählt werden."</string>
+    <string name="noApplications" msgid="1703149220378476198">"Diese Aktion kann von keiner App ausgeführt werden."</string>
+    <string name="android_system_label" msgid="2730611410547215779">"Android-System"</string>
 </resources>

@@ -19,6 +19,8 @@
     <string name="telecommAppLabel" product="default" msgid="1825598513414129827">"Símtöl"</string>
     <string name="userCallActivityLabel" product="default" msgid="3605391260292846248">"Sími"</string>
     <string name="unknown" msgid="6993977514360123431">"Óþekkt"</string>
+    <string name="private_num" msgid="7971471360030811411">"Leyninúmer"</string>
+    <string name="payphone" msgid="7652075262156192657">"Símasjálfsali"</string>
     <string name="notification_missedCallTitle" msgid="5060387047205532974">"Ósvarað símtal"</string>
     <string name="notification_missedWorkCallTitle" msgid="6965463282259034953">"Ósvarað vinnusímtal"</string>
     <string name="notification_missedCallsTitle" msgid="3910479625507893809">"Ósvöruð símtöl"</string>
@@ -43,7 +45,7 @@
     <string name="respond_via_sms_setting_title_2" msgid="4914853536609553457">"Breyta snarsvörum"</string>
     <string name="respond_via_sms_setting_summary" msgid="8054571501085436868"></string>
     <string name="respond_via_sms_edittext_dialog_title" msgid="6579353156073272157">"Snarsvar"</string>
-    <string name="respond_via_sms_confirmation_format" msgid="2932395476561267842">"Skilaboð send til <xliff:g id="PHONE_NUMBER">%s</xliff:g>."</string>
+    <string name="respond_via_sms_confirmation_format" msgid="2619774063232350285">"Sendir skilaboð í <xliff:g id="PHONE_NUMBER">%s</xliff:g>."</string>
     <string name="respond_via_sms_failure_format" msgid="5198680980054596391">"Ekki tókst að senda skilaboðin í <xliff:g id="PHONE_NUMBER">%s</xliff:g>."</string>
     <string name="enable_account_preference_title" msgid="6949224486748457976">"Símtalareikningar"</string>
     <string name="outgoing_call_not_allowed_user_restriction" msgid="3424338207838851646">"Aðeins neyðarsímöl eru leyfð."</string>
@@ -138,7 +140,11 @@
     <string name="callFailed_too_many_calls_include_merge" msgid="2234495082825519920">"Ekki er hægt að hringja símtal vegna þess að þegar eru tvö símtöl í gangi. Slíttu öðru símtalinu eða sameinaðu þau í símafund áður en þú hringir nýtt símtal."</string>
     <string name="callFailed_too_many_calls_exclude_merge" msgid="8616011288480453495">"Ekki er hægt að hringja símtal þar sem það eru þegar tvö símtöl í gangi. Slíttu öðru símtalinu áður en þú hringir nýtt símtal."</string>
     <string name="callFailed_unholdable_call" msgid="7580834131274566524">"Ekki er hægt að hringja símtal vegna símtals sem ekki er hægt að setja í bið. Slíttu símtalinu áður en þú hringir nýtt símtal."</string>
+    <string name="callSwapFailed_unholdable_call" msgid="4779540296319850415">"Ekki er hægt að skipta út virka símtalinu því ekki er hægt að setja það í bið. Ljúktu símtalinu til að gera símtalið í bið virkt."</string>
     <string name="callFailed_already_ringing" msgid="7931232733958098270">"Ekki er hægt að hringja símtal, þar sem ósvarað símtal er að berast. Svaraðu eða hafnaðu símtalinu áður en þú hringir nýtt símtal."</string>
     <string name="callFailed_reject_mmi" msgid="5219280796733595167">"Þessi MMI-kóði er ekki í boði ef hringt er í marga reikninga."</string>
+    <string name="call_hangup_fail_during_merge" msgid="4216015878956379200">"Ekki er hægt að slíta símtali á meðan á sameiningu stendur."</string>
     <string name="emergencyCall_reject_mmi" msgid="5056319534549705785">"Ekki er hægt að hringja MMI-kóða í neyðarsímtali."</string>
+    <string name="noApplications" msgid="1703149220378476198">"Engin forrit geta framkvæmt þessa aðgerð."</string>
+    <string name="android_system_label" msgid="2730611410547215779">"Android-kerfið"</string>
 </resources>

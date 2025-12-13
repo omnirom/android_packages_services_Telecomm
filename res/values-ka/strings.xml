@@ -19,6 +19,8 @@
     <string name="telecommAppLabel" product="default" msgid="1825598513414129827">"სატელეფონო ზარები"</string>
     <string name="userCallActivityLabel" product="default" msgid="3605391260292846248">"ტელეფონი"</string>
     <string name="unknown" msgid="6993977514360123431">"უცნობი"</string>
+    <string name="private_num" msgid="7971471360030811411">"დაფარული ნომერი"</string>
+    <string name="payphone" msgid="7652075262156192657">"ტაქსოფონი"</string>
     <string name="notification_missedCallTitle" msgid="5060387047205532974">"გამოტოვებული ზარი"</string>
     <string name="notification_missedWorkCallTitle" msgid="6965463282259034953">"გამოტოვებული ზარი (სამსახური)"</string>
     <string name="notification_missedCallsTitle" msgid="3910479625507893809">"გამოტოვებული ზარები"</string>
@@ -43,7 +45,7 @@
     <string name="respond_via_sms_setting_title_2" msgid="4914853536609553457">"სწრაფი პასუხის რედაქტირება"</string>
     <string name="respond_via_sms_setting_summary" msgid="8054571501085436868"></string>
     <string name="respond_via_sms_edittext_dialog_title" msgid="6579353156073272157">"სწრაფი პასუხი"</string>
-    <string name="respond_via_sms_confirmation_format" msgid="2932395476561267842">"შეტყობინება გაიგზავნა <xliff:g id="PHONE_NUMBER">%s</xliff:g>-თან."</string>
+    <string name="respond_via_sms_confirmation_format" msgid="2619774063232350285">"შეტყობინება ეგზავნება <xliff:g id="PHONE_NUMBER">%s</xliff:g>-ს."</string>
     <string name="respond_via_sms_failure_format" msgid="5198680980054596391">"შეტყობინება ვერ გაიგზავნა <xliff:g id="PHONE_NUMBER">%s</xliff:g>-ზე."</string>
     <string name="enable_account_preference_title" msgid="6949224486748457976">"დარეკვის ანგარიშები"</string>
     <string name="outgoing_call_not_allowed_user_restriction" msgid="3424338207838851646">"შესაძლებელია მხოლოდ გადაუდებელი ზარების განხორციელება."</string>
@@ -138,7 +140,11 @@
     <string name="callFailed_too_many_calls_include_merge" msgid="2234495082825519920">"ზარის განხორციელება შეუძლებელია, რადგან უკვე ორი ზარი მიმდინარეობს. ახალი ზარის განსახორციელებლად გათიშეთ ერთ-ერთი ზარი ან გააერთიანეთ ისინი კონფერენციად."</string>
     <string name="callFailed_too_many_calls_exclude_merge" msgid="8616011288480453495">"ზარის განხორციელება შეუძლებელია, რადგან უკვე ორი ზარი მიმდინარეობს. ახალი ზარის განსახორციელებლად გათიშეთ ერთ-ერთი ზარი."</string>
     <string name="callFailed_unholdable_call" msgid="7580834131274566524">"ზარის განხორციელება ვერ ხერხდება, რადგან მიმდინარეობს ზარი, რომლის მოცდის რეჟიმში გადაყვანაც შეუძლებელია. ახალი ზარის განსახორციელებლად გათიშეთ აღნიშნული ზარი."</string>
+    <string name="callSwapFailed_unholdable_call" msgid="4779540296319850415">"აქტიური ზარის შენაცვლება შეუძლებელია, რადგან მას არ აქვს მოცდის მხარდაჭერა. გათიშეთ მიმდინარე ზარი შეყოვნებული ზარის გასააქტიურებლად."</string>
     <string name="callFailed_already_ringing" msgid="7931232733958098270">"ზარის განხორციელება შეუძლებელია, რადგან გაქვთ უპასუხო შემომავალი ზარი. უპასუხეთ ან უარყავით შემომავალი ზარი ახალი ზარის განხორციელებამდე."</string>
     <string name="callFailed_reject_mmi" msgid="5219280796733595167">"ეს MMI კოდი ხელმისაწვდომი არ არის სხვადასხვა ანგარიშზე ზარების განხორცილებისას."</string>
+    <string name="call_hangup_fail_during_merge" msgid="4216015878956379200">"ზარის გათიშვა შეუძლებელია გაერთიანების დროს."</string>
     <string name="emergencyCall_reject_mmi" msgid="5056319534549705785">"MMI კოდების აკრეფა შეუძლებელია გადაუდებელი ზარის განხორციელებისას."</string>
+    <string name="noApplications" msgid="1703149220378476198">"ვერცერთი აპი ვერ შეასრულებს ამ ქმედებას."</string>
+    <string name="android_system_label" msgid="2730611410547215779">"Android-ის სისტემა"</string>
 </resources>

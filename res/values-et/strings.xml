@@ -19,6 +19,8 @@
     <string name="telecommAppLabel" product="default" msgid="1825598513414129827">"Telefonikõned"</string>
     <string name="userCallActivityLabel" product="default" msgid="3605391260292846248">"Telefon"</string>
     <string name="unknown" msgid="6993977514360123431">"Tundmatu"</string>
+    <string name="private_num" msgid="7971471360030811411">"Varjatud number"</string>
+    <string name="payphone" msgid="7652075262156192657">"Telefoniautomaat"</string>
     <string name="notification_missedCallTitle" msgid="5060387047205532974">"Vastamata kõne"</string>
     <string name="notification_missedWorkCallTitle" msgid="6965463282259034953">"Vastamata kõne töölt"</string>
     <string name="notification_missedCallsTitle" msgid="3910479625507893809">"Vastamata kõned"</string>
@@ -43,7 +45,7 @@
     <string name="respond_via_sms_setting_title_2" msgid="4914853536609553457">"Kiirvastuste muutmine"</string>
     <string name="respond_via_sms_setting_summary" msgid="8054571501085436868"></string>
     <string name="respond_via_sms_edittext_dialog_title" msgid="6579353156073272157">"Kiirvastus"</string>
-    <string name="respond_via_sms_confirmation_format" msgid="2932395476561267842">"Sõnum on saadetud numbrile <xliff:g id="PHONE_NUMBER">%s</xliff:g>."</string>
+    <string name="respond_via_sms_confirmation_format" msgid="2619774063232350285">"Sõnumi saatmine numbrile <xliff:g id="PHONE_NUMBER">%s</xliff:g>."</string>
     <string name="respond_via_sms_failure_format" msgid="5198680980054596391">"Sõnumi saatmine numbrile <xliff:g id="PHONE_NUMBER">%s</xliff:g> ebaõnnestus."</string>
     <string name="enable_account_preference_title" msgid="6949224486748457976">"Kõnekontod"</string>
     <string name="outgoing_call_not_allowed_user_restriction" msgid="3424338207838851646">"Lubatud on ainult hädaabikõned."</string>
@@ -138,7 +140,11 @@
     <string name="callFailed_too_many_calls_include_merge" msgid="2234495082825519920">"Kõnet ei saa teha, kuna kaks kõnet on juba pooleli. Enne uue kõne tegemist katkestage üks kõnedest või liitke need konverentskõneks."</string>
     <string name="callFailed_too_many_calls_exclude_merge" msgid="8616011288480453495">"Kõnet ei saa teha, kuna kaks kõnet on juba pooleli. Enne uue kõne tegemist katkestage üks kõnedest."</string>
     <string name="callFailed_unholdable_call" msgid="7580834131274566524">"Uut kõnet ei saa teha, kuna pooleliolevat kõnet ei saa ootele panna. Enne uue kõne tegemist katkestage pooleliolev kõne."</string>
+    <string name="callSwapFailed_unholdable_call" msgid="4779540296319850415">"Aktiivset kõnet ei saa ümber lülitada, kuna see ei toeta ootel hoidmist. Katkestage kõne, et muuta ootel olev kõne aktiivseks."</string>
     <string name="callFailed_already_ringing" msgid="7931232733958098270">"Kõnet ei saa teha, kuna teil on vastamata sissetulev kõne. Enne uue kõne tegemist vastake sissetulevale kõnele või keelduge sellest."</string>
     <string name="callFailed_reject_mmi" msgid="5219280796733595167">"See MMI-kood pole saadaval mitmel kontol toimuvate kõnede jaoks."</string>
+    <string name="call_hangup_fail_during_merge" msgid="4216015878956379200">"Ühendamise ajal ei saa kõnet katkestada."</string>
     <string name="emergencyCall_reject_mmi" msgid="5056319534549705785">"MMI-koode ei saa hädaabikõne ajal valida."</string>
+    <string name="noApplications" msgid="1703149220378476198">"Ükski rakendus ei saa seda toimingut teha."</string>
+    <string name="android_system_label" msgid="2730611410547215779">"Android-süsteem"</string>
 </resources>
